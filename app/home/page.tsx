@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
+import HomePageComponent from '../components/HomePageCompo'
 
 const HomePage = () => {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+    <main className="min-h-screen flex items-center justify-center">
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold text-gray-900">
           MMM2027 Application
@@ -13,6 +14,7 @@ const HomePage = () => {
             Get Started
           </button>
         </div>
+        <HomePageComponent />
       </div>
     </main>
   )
