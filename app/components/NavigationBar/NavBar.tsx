@@ -89,7 +89,7 @@ export default function Navbar() {
 
   return (
     <nav className="w-full shadow-sm fixed top-0 left-0 z-50 bg-white">
-      <div className="max-w-7xl mx-auto flex items-center justify-between p-4">
+      <div className="max-w-7xl mx-auto flex items-center justify-between p-2">
         
         <Link href="/home">
           <Image src="/images/logo.png" width={120} height={60} alt="Logo" />
