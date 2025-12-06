@@ -217,7 +217,7 @@ export default function TextEditor({
   const QuillComponent = ReactQuill as any;
 
   return (
-    <div className="relative" style={{ height: "70vh" }}>
+    <div className="relative" style={{ height: "60vh", width: "auto" }}>
       {/* Popup Modal */}
       {popupOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[2000]">

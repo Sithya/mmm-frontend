@@ -5,9 +5,9 @@ import Banner from '../components/Banner'
 const HomePage = () => {
   return (
     <>
-    <div className="min-h-screen items-center justify-center">
+    <div className="">
       <Banner />
-      <div className="text-center space-y-4 p-6 ">
+      <div className="text-center p-6">
        
         <HomePageComponent />
         

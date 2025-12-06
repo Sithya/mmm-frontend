@@ -1,6 +1,8 @@
+
 import type { Metadata } from "next";
 import "./globals.css"
 import NavbarWrapper from "./components/NavigationBar/NavbarWrapper";
+import { usePathname } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "MMM2027 Application",
@@ -12,7 +14,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <NavbarWrapper />
-        <main>{children}</main>
+        <main>
+          {children}
+        </main>
       </body>
     </html>
   );
