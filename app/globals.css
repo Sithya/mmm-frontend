@@ -18,4 +18,42 @@
       "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
       "Helvetica Neue", sans-serif;
   }
+
+  .ql-map {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px !important;
+    min-width: 40px;
+
+    font-size: 13px;
+    font-weight: 500;
+    color: #444;
+
+    background: white;
+    border: 1px solid #c0d8ff !important;
+    border-radius: 6px !important;
+    transition: 0.15s ease-in-out;
+  }
+
+  /* Remove Quill’s default empty content */
+  .ql-map::before {
+    content: "Map" !important;
+  }
+
+  .ql-map:hover {
+    background: #e8f0ff !important;
+    border-color: #a5c8ff !important;
+    border: none !important;
+  }
+
+  .ql-map:active {
+    background: #e8f0ff !important;
+    border-color: #a5c8ff !important;
+  }
+
+  .ql-map:focus {
+    outline: 2px solid #c0d8ff !important;
+  }
+
 }
