@@ -10,14 +10,12 @@ interface DateItem {
   title: string;
 }
 
-export default function ImportantDates({ isAdmin = false }: { isAdmin?: boolean }) {
+export default function ImportantDates() {
   const [dates, setDates] = useState<DateItem[]>([
     { id: 1, month: "OCT", day: "29", title: "Demonstration Papers Acceptance Notification" },
     { id: 2, month: "OCT", day: "29", title: "Demonstration Papers Acceptance Notification" },
     { id: 3, month: "OCT", day: "29", title: "Demonstration Papers Acceptance Notification" },
     { id: 4, month: "OCT", day: "29", title: "Demonstration Papers Acceptance Notification" },
-    { id: 5, month: "OCT", day: "29", title: "Demonstration Papers Acceptance Notification" },
-    { id: 6, month: "OCT", day: "29", title: "Demonstration Papers Acceptance Notification" },
   ]);
 
   // Modal state
@@ -25,6 +23,7 @@ export default function ImportantDates({ isAdmin = false }: { isAdmin?: boolean 
   const [newMonth, setNewMonth] = useState("");
   const [newDay, setNewDay] = useState("");
   const [newTitle, setNewTitle] = useState("");
+  const isAdmin = false;
 
   const deleteDate = (id: number) => {
     setDates(prev => prev.filter(item => item.id !== id));
@@ -45,6 +44,7 @@ export default function ImportantDates({ isAdmin = false }: { isAdmin?: boolean 
     setNewMonth("");
     setNewDay("");
     setNewTitle("");
+
   };
 
   return (
@@ -63,15 +63,15 @@ export default function ImportantDates({ isAdmin = false }: { isAdmin?: boolean 
 
       <div className="space-y-4">
         {dates.map(item => (
-          <div key={item.id} className="flex items-center border rounded-lg p-4 shadow-sm">
+          <div key={item.id} className="flex items-center border rounded-lg shadow-sm">
             {/* Date Box */}
-            <div className="w-20 border-r text-center rounded-md p-2" style={{ background: "rgba(253, 207, 250, 0.2667)" }}>
+            <div className="w-20 border-r text-center rounded-md p-4" style={{ background: "rgba(253, 207, 250, 0.2667)" }}>
               <p className="text-[#2A0845] font-bold">{item.month}</p>
               <p className="text-[#2A0845] font-bold text-xl leading-none">{item.day}</p>
             </div>
 
             {/* Title */}
-            <div className="pl-4 flex-1">
+            <div className="pl-4 flex-1 text-left ml-1.5">
               <p className="text-gray-900 text-sm">{item.title}</p>
 
               {isAdmin && (

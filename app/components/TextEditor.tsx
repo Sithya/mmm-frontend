@@ -50,7 +50,7 @@ const registerIframeBlot = async () => {
   try {
     Quill.register(IframeBlot as any);
     iframeRegistered = true;
-  } catch {}
+  } catch { }
 };
 
 // Component //
@@ -70,6 +70,8 @@ export default function TextEditor({
     null
   );
   const [popupValue, setPopupValue] = useState("");
+  const [popupDisplay, setPopupDisplay] = useState("");
+
 
   useEffect(() => {
     registerIframeBlot().then(() => setMounted(true));
@@ -119,6 +121,7 @@ export default function TextEditor({
   const openPopup = (type: "link" | "video" | "map") => {
     setPopupType(type);
     setPopupValue("");
+    setPopupDisplay("");
     setPopupOpen(true);
   };
 
@@ -132,9 +135,42 @@ export default function TextEditor({
     const range = quill.getSelection(true);
 
     if (popupType === "link") {
-      quill.format("link", popupValue);
-    } else if (popupType === "video") {
-      quill.insertEmbed(range.index, "video", popupValue);
+      const url = popupValue.trim();
+      const display = popupDisplay.trim() || popupValue.trim();
+
+      if (!url) {
+        setPopupOpen(false);
+        return;
+      }
+
+      if (range.length === 0) {
+        // No selected text, insert display text with link
+        quill.insertText(range.index, display, "link", url);
+        quill.setSelection(range.index + display.length);
+      } else {
+        // There is selected text, replace it with display text + link
+        quill.deleteText(range.index, range.length);
+        quill.insertText(range.index, display, "link", url);
+        quill.setSelection(range.index + display.length);
+      }
+
+      setPopupOpen(false);
+      return;
+    }
+    else if (popupType === "video") {
+      let videoUrl = popupValue.trim();
+
+      // Convert normal YouTube link to embed URL
+      const ytShort = videoUrl.match(/youtu\.be\/([^?]+)/);
+      const ytLong = videoUrl.match(/youtube\.com\/watch\?v=([^&]+)/);
+
+      if (ytShort) {
+        videoUrl = `https://www.youtube.com/embed/${ytShort[1]}`;
+      } else if (ytLong) {
+        videoUrl = `https://www.youtube.com/embed/${ytLong[1]}`;
+      }
+
+      quill.insertEmbed(range.index, "video", videoUrl);
       quill.setSelection(range.index + 1);
     } else if (popupType === "map") {
       quill.insertEmbed(range.index, "iframe", popupValue);
@@ -232,11 +268,20 @@ export default function TextEditor({
                 popupType === "map"
                   ? "Google Maps embed URL"
                   : popupType === "video"
-                  ? "YouTube/Vimeo video URL"
-                  : "https://example.com"
+                    ? "YouTube/Vimeo video URL"
+                    : "https://example.com"
               }
               className="w-full border rounded-lg px-3 py-2 mb-4 focus:ring focus:ring-purple-300 outline-none"
             />
+            {popupType === "link" && (
+              <input
+                type="text"
+                value={popupDisplay}
+                onChange={(e) => setPopupDisplay(e.target.value)}
+                placeholder="Display text (optional)"
+                className="w-full border rounded-lg px-3 py-2 mb-4 focus:ring focus:ring-purple-300 outline-none"
+              />
+            )}
 
             <div className="flex justify-end gap-3 mt-3">
               <button onClick={() => setPopupOpen(false)} className="px-4 py-2 rounded-lg border hover:bg-gray-100">Cancel</button>

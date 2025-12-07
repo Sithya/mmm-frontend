@@ -16,15 +16,18 @@ const HomePageComponent = () => {
 
           {/* Preview content */}
           {/* <div dangerouslySetInnerHTML={{ __html: content }}></div> */}
-          <div className="max-w-5xl mt-[80px]">
+          {/* <div className="max-w-5xl mt-[80px]">
             <NewsCard />
-          </div>
+          </div> */}
 
-          
+          <Link href="/admin/create-content">
+            <div className='w-[68vw] max-w-5xl h-16 flex items-center justify-center  border mr-7 border-purple-300 rounded-xl shadow-sm hover:shadow-md 
+              cursor-pointer transition-all duration-300 text-purple-900 font-semibold text-lg'> Create Content</div>
+          </Link>
         </div>
 
         <div className=''>
-          <ImportantDates isAdmin={false} />
+          <ImportantDates />
         </div>
 
 
