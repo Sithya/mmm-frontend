@@ -26,7 +26,7 @@ const Banner = () => {
       className="
         relative w-full h-[65vh] 
         flex items-center justify-center 
-        bg-cover bg-center mt-[80px] z-40
+        bg-cover bg-center mt-[80px]
       "
       style={{
         backgroundImage: "url('/images/angkor_wat.png')" 

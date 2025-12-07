@@ -16,6 +16,8 @@ export default function ImportantDates({ isAdmin = false }: { isAdmin?: boolean 
     { id: 2, month: "OCT", day: "29", title: "Demonstration Papers Acceptance Notification" },
     { id: 3, month: "OCT", day: "29", title: "Demonstration Papers Acceptance Notification" },
     { id: 4, month: "OCT", day: "29", title: "Demonstration Papers Acceptance Notification" },
+    { id: 5, month: "OCT", day: "29", title: "Demonstration Papers Acceptance Notification" },
+    { id: 6, month: "OCT", day: "29", title: "Demonstration Papers Acceptance Notification" },
   ]);
 
   // Modal state
@@ -46,6 +48,7 @@ export default function ImportantDates({ isAdmin = false }: { isAdmin?: boolean 
   };
 
   return (
+    <>
     <div className="w-full max-w-sm border rounded-xl p-6 shadow-sm bg-white ml-5 border-purple-800">
 
       <h2 className="text-xl font-bold text-[#2A0845]">IMPORTANT DATES</h2>
@@ -86,14 +89,15 @@ export default function ImportantDates({ isAdmin = false }: { isAdmin?: boolean 
         <>
           <button
             onClick={() => setShowModal(true)}
-            className="mt-5 w-full bg-[#2A0845] text-white py-2 rounded-lg text-sm"
+            className="mt-5 w-full bg-purple-800 text-white py-2 rounded-lg text-sm font-medium hover:bg-purple-900"
           >
             + Add New Date
           </button>
 
           {/* Modal */}
           {showModal && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[9999] animate-slideUp">
+
               <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-lg relative">
                 <h3 className="text-xl font-bold text-[#2A0845] mb-4">Add New Date</h3>
 
@@ -141,5 +145,23 @@ export default function ImportantDates({ isAdmin = false }: { isAdmin?: boolean 
         </>
       )}
     </div>
+    <style>
+        {`
+          .animate-slideUp {
+            animation: slideUp 0.25s ease-out;
+          }
+          @keyframes slideUp {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}
+      </style>
+    </>
   );
 }

@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import TextEditor from './TextEditor';
 import ImportantDates from './ImportantDates';
 import NewsCard from './NewsCard';
+import Link from 'next/link';
 
 const HomePageComponent = () => {
   const [content, setContent] = useState("");
@@ -15,17 +16,20 @@ const HomePageComponent = () => {
 
           {/* Preview content */}
           {/* <div dangerouslySetInnerHTML={{ __html: content }}></div> */}
+          <div className="max-w-5xl mt-[80px]">
+            <NewsCard />
+          </div>
+
+          
         </div>
 
-        <div className='sticky'>
-          <ImportantDates />
+        <div className=''>
+          <ImportantDates isAdmin={false} />
         </div>
 
 
       </div>
-      <div className="max-w-5xl p-5 ml-[90px]">
-        <NewsCard />
-      </div>
+      
     </>
   )
 }
