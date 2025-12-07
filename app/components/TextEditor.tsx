@@ -212,12 +212,12 @@ export default function TextEditor({
   }, [mounted]);
 
   if (!mounted)
-    return <div className="min-h-[200px] border p-4">Loading editor...</div>;
+    return <div className="min-h-[200px] border p-4 rounded-sm">Loading editor...</div>;
 
   const QuillComponent = ReactQuill as any;
 
   return (
-    <div className="relative" style={{ height: "60vh", width: "auto" }}>
+    <div className="relative" style={{ height: "60vh", width: "auto", borderRadius: "10px" }}>
       {/* Popup Modal */}
       {popupOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[2000]">
