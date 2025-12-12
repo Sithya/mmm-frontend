@@ -10,13 +10,13 @@ interface DateItem {
   title: string;
 }
 
-export default function ImportantDates() {
-  const [dates, setDates] = useState<DateItem[]>([
-    { id: 1, month: "OCT", day: "29", title: "Demonstration Papers Acceptance Notification" },
-    { id: 2, month: "OCT", day: "29", title: "Demonstration Papers Acceptance Notification" },
-    { id: 3, month: "OCT", day: "29", title: "Demonstration Papers Acceptance Notification" },
-    { id: 4, month: "OCT", day: "29", title: "Demonstration Papers Acceptance Notification" },
-  ]);
+interface Props {
+  initialDates: DateItem[];
+}
+
+
+export default function ImportantDates({initialDates}: Props) {
+  const [dates, setDates] = useState<DateItem[]>(initialDates);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -25,25 +25,50 @@ export default function ImportantDates() {
   const [newTitle, setNewTitle] = useState("");
   const isAdmin = false;
 
-  const deleteDate = (id: number) => {
-    setDates(prev => prev.filter(item => item.id !== id));
+  function parseDateItem(item: { id: number; due_date: string; description: string }): DateItem {
+    const date = new Date(item.due_date);
+    const month = date.toLocaleString("en-US", { month: "short" }).toUpperCase();
+    const day = date.getDate().toString();
+    return { id: item.id, month, day, title: item.description };
+  }
+
+  const deleteDate = async (id: number) => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/important-dates/${id}`, {method: 'DELETE'});
+      if(!res.ok){
+        setDates(prev => prev.filter(item => item.id !== id));
+      }
+    } catch (error) {
+        console.error('hehhe delete failed', error);
+    }
   };
 
-  const handleAddDate = () => {
+  const handleAddDate = async () => {
     if (!newMonth || !newDay || !newTitle) return;
-    setDates(prev => [
-      ...prev,
-      {
-        id: Date.now(),
-        month: newMonth.toUpperCase(),
-        day: newDay,
-        title: newTitle
-      }
-    ]);
-    setShowModal(false);
-    setNewMonth("");
-    setNewDay("");
-    setNewTitle("");
+
+    const due_date = new Date(`${newMonth}-${newDay}`).toISOString().split('T')[0];
+
+    try {
+      const res = await fetch('http://localhost:8000/api/important-dates', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ due_date, description: newTitle }),
+      })
+
+      if(res.ok) throw new Error('Failed to add new important data');
+
+      const json = await res.json();
+      const newDateItem = parseDateItem(json.data);
+
+      setDates(prev => [...prev, newDateItem]);
+      setShowModal(false);
+      setNewMonth("");
+      setNewDay("");
+      setNewTitle("");
+
+    } catch(error) {
+      return console.error(error)
+    }
 
   };
 
