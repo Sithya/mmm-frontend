@@ -3,12 +3,15 @@ import ImportantDates from './ImportantDates';
 
 interface DateItem {
     id: number;
-    dueDate: string;
+    due_date: string;
     description: string;
 }
 
 function parseDateItem (item: DateItem){
-    const date = new Date(item.dueDate);
+    const date = new Date(item.due_date);
+    if (isNaN(date.getTime())) {
+        return { id: item.id, month: '', day: '', year: '', title: item.description };
+    }
     const month = date.toLocaleString('en-US', { month: 'short'}).toUpperCase();
     const day = date.getDate().toString();
     const year = date.toLocaleString('en-US', { year: 'numeric'});
@@ -16,7 +19,7 @@ function parseDateItem (item: DateItem){
 }
 
 export default async function ImportantDatesServer() {
-    const res = await fetch('http://localhost:8000/api/important-dates');
+    const res = await fetch(`${process.env.API_INTERNAL_URL}/important-dates`);
     if(!res.ok){
         throw new Error('Falied to fetch important dates');
     }
