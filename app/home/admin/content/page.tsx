@@ -135,7 +135,7 @@ export default function AdminContentPage() {
         ) : (
           <div className="bg-gray-50 border border-purple-200 rounded-xl p-6 min-h-[300px]">
             <div
-              className="prose max-w-full"
+              className="max-w-full"
               dangerouslySetInnerHTML={{
                 __html: content || '<p>No content to preview.</p>',
               }}

@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import "./globals.css"
 import NavbarWrapper from "./components/NavigationBar/NavbarWrapper";
-import { usePathname } from "next/navigation";
+import "react-quill-new/dist/quill.snow.css";
 
 export const metadata: Metadata = {
   title: "MMM2027 Application",

@@ -38,7 +38,27 @@ const registerIframeBlot = async () => {
       node.setAttribute("frameborder", "0");
       node.setAttribute("allowfullscreen", "");
       node.style.width = "100%";
+      node.style.minHeight = "450px";
+      return node;
+    }
+
+    static value(node: HTMLElement) {
+      return node.getAttribute("src");
+    }
+  }
+  class VideoBlot extends BlockEmbed {
+    static blotName = "video";
+    static tagName = "iframe";
+
+    static create(value: string) {
+      const node = super.create() as HTMLElement;
+      node.setAttribute("src", value);
+      node.setAttribute("frameborder", "0");
+      node.setAttribute("allowfullscreen", "");
+      node.classList.add("resizable-iframe");
+      node.style.width = "100%";
       node.style.minHeight = "300px";
+      node.style.borderRadius = "10px";
       return node;
     }
 
@@ -47,8 +67,28 @@ const registerIframeBlot = async () => {
     }
   }
 
+  class ImageBlot extends BlockEmbed {
+    static blotName = "image";
+    static tagName = "img";
+
+    static create(value: string) {
+      const node = super.create() as HTMLElement;
+      node.setAttribute("src", value);
+        node.style.maxWidth = "100%";
+      node.style.height = "auto";
+      node.style.borderRadius = "10px";
+      return node;
+    }
+
+    static value(node: HTMLElement) {
+      return node.getAttribute("src")
+    }
+  }
+
   try {
     Quill.register(IframeBlot as any);
+    Quill.register(VideoBlot as any);
+    Quill.register(ImageBlot as any);
     iframeRegistered = true;
   } catch { }
 };
