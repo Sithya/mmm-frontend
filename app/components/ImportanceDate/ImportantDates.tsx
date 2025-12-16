@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Pencil, Trash2 } from "lucide-react";
+// import { Pencil, Trash2 } from "lucide-react";
 
 
 interface DateItem {
@@ -191,7 +192,7 @@ export default function ImportantDates({ initialDates }: Props) {
                           className="underline text-[#2A0845] hover:text-purple-900"
                           onClick={() => openEditModal(item)}
                         >
-                          <Pencil className="inline-block mr-1" size={14} />
+                        <Pencil className="inline-block mr-1" size={14} />
                         </button>
                         <button
                           className="underline text-red-600 hover:text-red-700"

@@ -1,26 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
-export interface NewsItem {
+interface NewsItem {
   id: number;
   page_id?: number;
   title: string;
   content?: string;
   published_at?: string;
-  linkText?: string;
-  link?: string;
+  link_text?: string;
+  link_url?: string;
 }
 
 interface Props {
-  initialNews: NewsItem[];
+  pageId?: number;
 }
 
-const API_URL = `${process.env.CLIENT_API_URL}/news`;
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/news`;
 
-export default function NewsCard({ initialNews }: Props) {
-  const [newsData, setNewsData] = useState<NewsItem[]>(initialNews);
+export default function NewsCard({ pageId }: Props) {
+  const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [editNews, setEditNews] = useState<NewsItem | null>(null);
@@ -29,11 +29,26 @@ export default function NewsCard({ initialNews }: Props) {
     title: "",
     content: "",
     published_at: "",
-    linkText: "",
-    link: "",
+    link_text: "",
+    link_url: "",
   });
 
   const isAdmin = true; 
+
+  /* Fetch news */
+  const fetchNews = async () => {
+    try {
+      const res = await fetch(`${API_URL}`);
+      const data = await res.json();
+      setNewsData(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchNews();
+  }, []);
 
   /* CREATE / UPDATE */
   const handleSave = async () => {
@@ -42,16 +57,18 @@ export default function NewsCard({ initialNews }: Props) {
     try {
       let res: Response;
       if (editNews) {
+        // UPDATE
         res = await fetch(`${API_URL}/${editNews.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newNews),
         });
       } else {
+        // CREATE
         res = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...newNews, page_id: 1 }),
+          body: JSON.stringify({ ...newNews, page_id: pageId || 2 }),
         });
       }
 
@@ -65,13 +82,13 @@ export default function NewsCard({ initialNews }: Props) {
       const json = text ? JSON.parse(text) : null;
 
       if (editNews && json) {
-        setNewsData(prev =>
-          prev.map(item =>
+        setNewsData((prev) =>
+          prev.map((item) =>
             item.id === editNews.id ? { ...item, ...json } : item
           )
         );
       } else if (json) {
-        setNewsData(prev => [...prev, json]);
+        setNewsData((prev) => [...prev, json]);
       }
 
       setShowCreate(false);
@@ -80,8 +97,8 @@ export default function NewsCard({ initialNews }: Props) {
         title: "",
         content: "",
         published_at: "",
-        linkText: "",
-        link: "",
+        link_text: "",
+        link_url: "",
       });
     } catch (err) {
       console.error(err);
@@ -97,20 +114,21 @@ export default function NewsCard({ initialNews }: Props) {
         console.error("Delete failed:", errorText);
         return;
       }
-      setNewsData(prev => prev.filter(item => item.id !== id));
+      setNewsData((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
       console.error(err);
     }
   };
 
+  /* Open Edit Modal */
   const openEditModal = (item: NewsItem) => {
     setEditNews(item);
     setNewNews({
       title: item.title,
       content: item.content,
       published_at: item.published_at,
-      linkText: item.linkText,
-      link: item.link,
+      link_text: item.link_text,
+      link_url: item.link_url,
     });
     setShowCreate(true);
   };
@@ -119,10 +137,10 @@ export default function NewsCard({ initialNews }: Props) {
   return (
     <>
       <div className="space-y-4">
-        {newsData.map(item => {
+        {newsData.map((item) => {
           const expanded = expandedId === item.id;
-          const parts = item.linkText
-            ? item.content?.split(item.linkText) || [item.content]
+          const parts = item.link_text
+            ? item.content?.split(item.link_text) || [item.content]
             : [item.content || ""];
 
           return (
@@ -144,18 +162,24 @@ export default function NewsCard({ initialNews }: Props) {
                   </p>
                 )}
 
-                <h2 className="font-semibold text-lg text-gray-900 mb-1">{item.title}</h2>
+                <h2 className="font-semibold text-lg text-gray-900 mb-1">
+                  {item.title}
+                </h2>
 
-                <p className={`text-gray-700 transition-all duration-300 ${expanded ? "line-clamp-none" : "line-clamp-1"}`}>
-                  {item.linkText ? (
+                <p
+                  className={`text-gray-700 transition-all duration-300 ${
+                    expanded ? "line-clamp-none" : "line-clamp-1"
+                  }`}
+                >
+                  {item.link_text ? (
                     <>
                       {parts[0]}
                       <Link
-                        href={item.link!}
-                        className="text-purple-600 underline hover:text-purple-800"
+                        href={item.link_url!}
+                        className="text-purple-700 underline hover:text-purple-800 font-medium"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {item.linkText}
+                        {item.link_text}
                       </Link>
                       {parts[1]}
                     </>
@@ -204,7 +228,9 @@ export default function NewsCard({ initialNews }: Props) {
       {showCreate && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl animate-slideUp">
-            <h2 className="text-xl font-semibold text-[#2A0845] mb-4">{editNews ? "Edit News" : "Create News"}</h2>
+            <h2 className="text-xl font-semibold text-[#2A0845] mb-4">
+              {editNews ? "Edit News" : "Create News"}
+            </h2>
 
             <div className="space-y-3">
               <input
@@ -212,34 +238,45 @@ export default function NewsCard({ initialNews }: Props) {
                 placeholder="Title"
                 className="w-full border border-purple-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
                 value={newNews.title}
-                onChange={(e) => setNewNews({ ...newNews, title: e.target.value })}
+                onChange={(e) =>
+                  setNewNews({ ...newNews, title: e.target.value })
+                }
               />
               <textarea
                 rows={3}
                 placeholder="Detail"
                 className="w-full border border-purple-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
                 value={newNews.content}
-                onChange={(e) => setNewNews({ ...newNews, content: e.target.value })}
+                onChange={(e) =>
+                  setNewNews({ ...newNews, content: e.target.value })
+                }
               ></textarea>
               <input
                 type="date"
+                placeholder="Published date"
                 className="w-full border border-purple-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
                 value={newNews.published_at?.slice(0, 10) || ""}
-                onChange={(e) => setNewNews({ ...newNews, published_at: e.target.value })}
+                onChange={(e) =>
+                  setNewNews({ ...newNews, published_at: e.target.value })
+                }
               />
               <input
                 type="text"
                 placeholder="Link text (optional)"
                 className="w-full border border-purple-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
-                value={newNews.linkText}
-                onChange={(e) => setNewNews({ ...newNews, linkText: e.target.value })}
+                value={newNews.link_text}
+                onChange={(e) =>
+                  setNewNews({ ...newNews, link_text: e.target.value })
+                }
               />
               <input
                 type="text"
                 placeholder="Link URL (optional)"
                 className="w-full border border-purple-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
-                value={newNews.link}
-                onChange={(e) => setNewNews({ ...newNews, link: e.target.value })}
+                value={newNews.link_url}
+                onChange={(e) =>
+                  setNewNews({ ...newNews, link_url: e.target.value })
+                }
               />
             </div>
 
@@ -248,7 +285,13 @@ export default function NewsCard({ initialNews }: Props) {
                 onClick={() => {
                   setShowCreate(false);
                   setEditNews(null);
-                  setNewNews({ title: "", content: "", published_at: "", linkText: "", link: "" });
+                  setNewNews({
+                    title: "",
+                    content: "",
+                    published_at: "",
+                    link_text: "",
+                    link_url: "",
+                  });
                 }}
                 className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition"
               >

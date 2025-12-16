@@ -1,7 +1,7 @@
 
 import type { Metadata } from "next";
 import "./globals.css"
-import NavbarWrapper from "./components/NavigationBar/NavbarWrapper";
+import NavbarWrapper from "./components/UserComponent/NavigationBar/NavbarWrapper";
 import "react-quill-new/dist/quill.snow.css";
 
 export const metadata: Metadata = {

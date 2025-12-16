@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import 'react-quill-new/dist/quill.snow.css'; // add this line when you want to display the text editor content
+import 'react-quill-new/dist/quill.snow.css'; 
 
 interface PageData {
   id: number;
@@ -11,17 +11,24 @@ interface PageData {
   component: string;
 }
 
-const FetchHomePage = () => {
+interface PageContentProps {
+  slug?: string; // optional, will auto-detect if not provided
+}
+
+import { usePathname } from 'next/navigation';
+
+const PageContent: React.FC<PageContentProps> = ({ slug: propSlug }) => {
+  const pathname = usePathname();
+  const slug = propSlug || pathname?.slice(1) || 'home'; // default to 'home'
+
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchHomePage = async () => {
+    const fetchPageContent = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/pages/slug/home`
-        );
-        if (!res.ok) throw new Error('Failed to fetch homepage content');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pages/slug/${slug}`);
+        if (!res.ok) throw new Error('Failed to fetch page content');
         const data: PageData = await res.json();
         setContent(data.content || '');
       } catch (err) {
@@ -31,14 +38,13 @@ const FetchHomePage = () => {
       }
     };
 
-    fetchHomePage();
-  }, []);
+    fetchPageContent();
+  }, [slug]);
 
-  if (loading) return <p>Loading homepage...</p>;
+  if (loading) return <p>Loading page content...</p>;
 
   return (
     <div className="max-w-5xl mx-auto px-4">
-      {/* Quill display wrapper */}
       <div className="ql-snow">
         <div
           className="ql-editor"
@@ -49,4 +55,4 @@ const FetchHomePage = () => {
   );
 };
 
-export default FetchHomePage;
+export default PageContent;

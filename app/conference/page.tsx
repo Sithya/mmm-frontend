@@ -1,15 +1,15 @@
+// "use client"
 import React from 'react'
+import Banner from '../components/UserComponent/Banner'
+import FetchPageContent from '../components/AdminComponent/FetchPageContent'
+import AddContentButton from '../components/AdminComponent/AddContentButton'
 
 const ConferencePage = () => {
   return (
     <>
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-gray-900">
-          Conference Page
-        </h1>
-      </div>
-    </div>
+      <Banner />
+      <FetchPageContent />
+      {/* <AddContentButton /> */}
     </>
   )
 }

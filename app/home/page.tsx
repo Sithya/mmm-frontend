@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
-import HomePageComponent from '../components/HomePage/HomePageCompo'
-import Banner from '../components/Banner'
+import HomePageComponent from '../components/UserComponent/HomePageCompo'
+import Banner from '../components/UserComponent/Banner'
 import ImportantDatesServer from '../components/ImportanceDate/ImportantDatesServer'
-import HomePageServer from '../components/HomePage/HomePageServer'
 
 const HomePage = () => {
   return (
