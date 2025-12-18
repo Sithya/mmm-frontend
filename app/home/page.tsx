@@ -9,9 +9,11 @@ const HomePage = () => {
     <div className="">
       <Banner />
       <div className='text-center text-purple-900 text-4xl font-bold mt-9 mb-10'>WELCOME TO MMM2027</div>
-      <div className="flex">
+      <div className="flex justify-around px-[90px] align">
         <HomePageComponent />
+        <div className=''>
         <ImportantDatesServer />
+        </div>
       </div>
     </div>
     </>

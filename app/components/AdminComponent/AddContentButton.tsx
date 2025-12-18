@@ -4,14 +4,13 @@ import { usePathname } from 'next/navigation';
 export default function EditPageButton() {
     const pathname = usePathname();
     const slug = pathname.slice(1).replace(/\//g, '-') || "home"; // Remove leading slash and replace slashes with dashes 
+    const addContent = true
   return (
     <Link href={`/admin/pages/${slug}`}>
-      <div className="flex justify-center">
+      <div className="flex justify-center mt-8">
         <div
-          className="w-48 h-16 flex items-center justify-center border border-purple-300 rounded-xl shadow-sm
-          hover:shadow-md cursor-pointer transition-all duration-300 text-purple-900 font-semibold text-lg mb-10"
-        >
-          + Add Content
+          className="px-6 py-2 bg-purple-800 text-white rounded-lg shadow hover:bg-purple-900 transition font-medium duration-300 mb-10">
+          {addContent ? '+ Add Content' : 'Loading...'}
         </div>
       </div>
     </Link>

@@ -97,7 +97,7 @@ export default function AdminPageEditor() {
     <div className="max-h-screen bg-gray-50 p-6 mt-20">
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg p-8 flex flex-col h-[85vh]">
         <h1 className="text-2xl font-bold text-purple-900 mb-4">
-          Edit Page: {slug}
+          Edit {slug}
         </h1>
 
         {/* Tabs */}

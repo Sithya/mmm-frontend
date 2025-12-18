@@ -146,7 +146,7 @@ export default function NewsCard({ pageId }: Props) {
           return (
             <div
               key={item.id}
-              className="relative w-full bg-white rounded-xl shadow-md p-4 border text-left cursor-pointer"
+              className="relative w-auto bg-white rounded-xl shadow-md p-4 border text-left cursor-pointer ml-6"
               onClick={() => setExpandedId(expanded ? null : item.id)}
             >
               <div className="absolute top-0 left-0 h-full w-2 bg-gradient-to-b from-purple-700 to-purple-400 rounded-l-xl"></div>

@@ -44,7 +44,7 @@ const PageContent: React.FC<PageContentProps> = ({ slug: propSlug }) => {
   if (loading) return <p>Loading page content...</p>;
 
   return (
-    <div className="max-w-5xl mx-auto px-4">
+    <div className="max-w-7xl">
       <div className="ql-snow">
         <div
           className="ql-editor"

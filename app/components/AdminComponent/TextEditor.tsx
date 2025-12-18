@@ -26,7 +26,29 @@ const registerIframeBlot = async () => {
     QuillModule.default ||
     QuillModule;
 
+  const Embed = Quill.import("blots/embed") as any;
   const BlockEmbed = Quill.import("blots/block/embed") as any;
+
+
+  class ImageBlot extends Embed {
+  static blotName = "image";
+  static tagName = "img";
+
+  static create(value: string) {
+    const node = super.create() as HTMLImageElement;
+    node.src = value;
+    node.style.width = "auto";
+    node.style.height = "auto";
+    node.style.borderRadius = "6px";
+    node.style.margin = "4px";
+    return node;
+  }
+
+  static value(node: HTMLElement) {
+    return node.getAttribute("src");
+  }
+}
+
 
   class IframeBlot extends BlockEmbed {
     static blotName = "iframe";
@@ -67,24 +89,7 @@ const registerIframeBlot = async () => {
     }
   }
 
-  class ImageBlot extends BlockEmbed {
-    static blotName = "image";
-    static tagName = "img";
-
-    static create(value: string) {
-      const node = super.create() as HTMLElement;
-      node.setAttribute("src", value);
-        node.style.maxWidth = "100%";
-      node.style.height = "auto";
-      node.style.borderRadius = "10px";
-      return node;
-    }
-
-    static value(node: HTMLElement) {
-      return node.getAttribute("src")
-    }
-  }
-
+  
   try {
     Quill.register(IframeBlot as any);
     Quill.register(VideoBlot as any);
@@ -92,6 +97,29 @@ const registerIframeBlot = async () => {
     iframeRegistered = true;
   } catch { }
 };
+
+const registerFontSizes = async () => {
+  const QuillModule = await import("react-quill-new");
+  const Quill =
+    QuillModule.Quill ||
+    QuillModule.default?.Quill ||
+    QuillModule.default;
+
+  const Size = Quill.import("formats/size") as any;
+
+  Size.whitelist = [
+    "12px",
+    "14px",
+    "16px",
+    "18px",
+    "20px",
+    "24px",
+    "32px",
+  ];
+
+  Quill.register(Size, true);
+};
+
 
 // Component //
 export default function TextEditor({
@@ -117,6 +145,14 @@ export default function TextEditor({
     registerIframeBlot().then(() => setMounted(true));
   }, []);
 
+//   useEffect(() => {
+//   Promise.all([
+//     registerIframeBlot(),
+//     registerFontSizes(),
+//   ]).then(() => setMounted(true));
+// }, []);
+
+
   useEffect(() => setValue(initialValue), [initialValue]);
 
   // Toolbar Options //
@@ -133,7 +169,7 @@ export default function TextEditor({
   ];
 
   if (allowImage) toolbarOptions[toolbarOptions.length - 2].push("image");
-  if (allowMap) toolbarOptions[toolbarOptions.length - 2].push("map");
+  if (allowMap) toolbarOptions[toolbarOptions.length - 2].push({map: "Map"});
 
   // Handlers //
   const imageHandler = () => {
@@ -293,7 +329,7 @@ export default function TextEditor({
   const QuillComponent = ReactQuill as any;
 
   return (
-    <div className="relative" style={{ height: "50vh", width: "auto", borderRadius: "10px" }}>
+    <div className="relative" style={{ height: "57vh", width: "auto", borderRadius: "10px" }}>
       {/* Popup Modal */}
       {popupOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[2000]">

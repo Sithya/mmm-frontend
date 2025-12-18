@@ -8,7 +8,7 @@ const HomePageComponent = () => {
   return (
     <>
       <div className='flex'>
-        <div className='ml-[90px] mb-[100px] flex flex-col gap-30'>
+        <div className='mb-[100px] flex flex-col gap-30'>
           <FetchPageContent />
           <AddContentButton />
           <NewsCard />
