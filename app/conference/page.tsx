@@ -3,6 +3,8 @@ import Banner from '../components/UserComponent/Banner'
 import FetchPageContent from '../components/AdminComponent/FetchPageContent'
 import ConfernceButton from '../components/AdminComponent/PagesButton.tsx/ConferenceButton'
 import ImportantDatesServer from '../components/HybridComponent/ImportanceDate/ImportantDatesServer'
+import AdminKeynote from '../components/AdminComponent/admin_keynote'
+
 
 const ConferencePage = () => {
   return (
@@ -12,6 +14,7 @@ const ConferencePage = () => {
           <div className='max-w-5xl'>
           <FetchPageContent />
           <ConfernceButton />
+          <AdminKeynote/>
           </div>
           <ImportantDatesServer />
         </div>

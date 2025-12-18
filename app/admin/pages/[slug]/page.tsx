@@ -12,7 +12,25 @@ interface Page {
   component: string | null;
 }
 
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/pages`;
+// Build API base robustly: prefer NEXT_PUBLIC_API_BASE_URL, fall back to localhost.
+let API_URL_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+
+// If running in the browser and the base uses a Docker internal host, rewrite it
+// so the browser can reach the backend during local development.
+if (typeof window !== 'undefined') {
+  try {
+    const parsed = new URL(API_URL_BASE);
+    if (parsed.hostname === 'backend-nginx') {
+      parsed.hostname = 'localhost';
+      parsed.port = '8000';
+      API_URL_BASE = parsed.toString().replace(/\/$/, '');
+    }
+  } catch (e) {
+    // ignore malformed env value and keep fallback
+  }
+}
+
+const API_URL = `${API_URL_BASE.replace(/\/$/, '')}/pages`;
 
 export default function AdminPageEditor() {
   const router = useRouter();

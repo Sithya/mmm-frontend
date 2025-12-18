@@ -2,7 +2,16 @@
  * API Client for communicating with Laravel Backend
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1';
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1';
+const isServer = typeof window === 'undefined';
+
+export const API_BASE_URL = isServer
+  ? process.env.API_INTERNAL_URL
+  : process.env.NEXT_PUBLIC_API_URL;
+
+if (!API_BASE_URL) {
+  throw new Error('API_BASE_URL is not defined');
+}
 
 export interface ApiResponse<T = any> {
   data?: T;
