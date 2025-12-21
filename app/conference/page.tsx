@@ -3,7 +3,7 @@ import Banner from '../components/UserComponent/Banner'
 import FetchPageContent from '../components/AdminComponent/FetchPageContent'
 import ConfernceButton from '../components/AdminComponent/PagesButton.tsx/ConferenceButton'
 import ImportantDatesServer from '../components/HybridComponent/ImportanceDate/ImportantDatesServer'
-import AdminKeynote from '../components/AdminComponent/admin_keynote'
+import AdminKeynote from '../components/AdminComponent/Admin_keynote'
 import Keynotes from '../components/Keynote/Keynotes'
 
 
