@@ -1,3 +1,6 @@
+"use client";
+
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { apiClient } from "@/lib/api";
 
@@ -16,11 +19,42 @@ interface Keynote {
   time?: string;
 }
 
+interface Page { id: number; slug: string; }
+
 const fetchKeynotes = async (): Promise<Keynote[]> => {
   const res = await apiClient.get<Keynote[]>('/keynotes');
   return res.data ?? [];
 };
 
+const fetchPageIdBySlug = async (slug: string): Promise<number | null> => {
+  const res = await apiClient.get<Page>(`/pages/slug/${slug}`);
+  return res.data?.id ?? null;
+};
+
+
+function formatTime(raw?: string): string {
+  if (!raw) return '';
+  const s = raw.trim();
+  // Already AM/PM format: 9:00 AM or 09:00PM
+  const ampm = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (ampm) {
+    const h = parseInt(ampm[1], 10);
+    const m = ampm[2];
+    const mer = ampm[3].toUpperCase();
+    return `${h}:${m} ${mer}`;
+  }
+  // 24h format HH:mm or HH:mm:ss
+  const hms = s.match(/^(\d{2}):(\d{2})(?::\d{2})?$/);
+  if (hms) {
+    const hh = parseInt(hms[1], 10);
+    const mm = hms[2];
+    const mer = hh < 12 ? 'AM' : 'PM';
+    const h12 = hh % 12 === 0 ? 12 : hh % 12;
+    return `${h12}:${mm} ${mer}`;
+  }
+  // Fallback: return as-is
+  return s;
+}
 
 function normalizeImageUrl(url: string, width: number, height: number): string {
   try {
@@ -37,6 +71,19 @@ function normalizeImageUrl(url: string, width: number, height: number): string {
   } catch {
     return url;
   }
+}
+
+function formatDate(s?: string): string {
+  if (!s) return '';
+  // Expecting YYYY-MM-DD; avoid timezone shifts by manual parse
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return s;
+  const monthIdx = parseInt(m[2], 10) - 1;
+  const day = m[3];
+  const year = m[1];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const mon = months[Math.max(0, Math.min(11, monthIdx))];
+  return `${mon} ${day}, ${year}`;
 }
 
 function KeynoteCard({ keynote }: { keynote: Keynote }) {
@@ -66,8 +113,8 @@ function KeynoteCard({ keynote }: { keynote: Keynote }) {
             <div className="mt-2 text-xs text-gray-700 text-center flex flex-col items-center gap-1 w-full">
               <span role="img" aria-label="calendar"></span>
               <div className="space-y-0.5">
-                {keynote.date && <div className="font-medium">{keynote.date}</div>}
-                {keynote.time && <div>{keynote.time}</div>}
+                {keynote.date && <div className="font-medium">{formatDate(keynote.date)}</div>}
+                {keynote.time && <div>{formatTime(keynote.time)}</div>}
               </div>
             </div>
           )}
@@ -77,13 +124,49 @@ function KeynoteCard({ keynote }: { keynote: Keynote }) {
   );
 }
 
-export default function Keynotes({ keynotes }: { keynotes: Keynote[] }) {
-  if (keynotes.length === 0) {
+export default function Keynotes({ pageId, pageSlug, keynotes, refreshToken }: { pageId?: number; pageSlug?: string; keynotes?: Keynote[]; refreshToken?: number }) {
+  const [items, setItems] = useState<Keynote[]>(keynotes ?? []);
+  const [loading, setLoading] = useState<boolean>(!keynotes);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      if (keynotes) {
+        setItems(keynotes);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      let pid = pageId ?? null;
+      if (!pid && pageSlug) {
+        pid = await fetchPageIdBySlug(pageSlug);
+      }
+      const all = await fetchKeynotes();
+      const filtered = pid != null ? all.filter(k => k.page_id === pid) : all;
+      if (mounted) {
+        setItems(filtered);
+        setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [pageId, pageSlug, keynotes, refreshToken]);
+
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-purple-700"></div>
+        <p className="mt-2 text-gray-600 text-sm">Loading keynotes...</p>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
     return <div className="text-center text-gray-500 py-12">No keynotes available at this time.</div>;
   }
   return (
     <div className="space-y-6">
-      {keynotes.map((keynote) => (
+      {items.map((keynote) => (
         <KeynoteCard key={keynote.id} keynote={keynote} />
       ))}
     </div>

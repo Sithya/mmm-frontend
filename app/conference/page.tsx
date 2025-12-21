@@ -4,6 +4,7 @@ import FetchPageContent from '../components/AdminComponent/FetchPageContent'
 import ConfernceButton from '../components/AdminComponent/PagesButton.tsx/ConferenceButton'
 import ImportantDatesServer from '../components/HybridComponent/ImportanceDate/ImportantDatesServer'
 import AdminKeynote from '../components/AdminComponent/admin_keynote'
+import Keynotes from '../components/Keynote/Keynotes'
 
 
 const ConferencePage = () => {
@@ -14,7 +15,8 @@ const ConferencePage = () => {
           <div className='max-w-5xl'>
           <FetchPageContent />
           <ConfernceButton />
-          <AdminKeynote/>
+          <Keynotes />
+          {/* <AdminKeynote/> */}
           </div>
           <ImportantDatesServer />
         </div>
