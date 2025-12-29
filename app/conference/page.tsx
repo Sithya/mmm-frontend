@@ -16,7 +16,7 @@ const ConferencePage = () => {
           <FetchPageContent />
           <ConfernceButton />
           <Keynotes />
-          {/* <AdminKeynote/> */}
+          <AdminKeynote/>
           </div>
           <ImportantDatesServer />
         </div>

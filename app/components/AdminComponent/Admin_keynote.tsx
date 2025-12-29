@@ -138,9 +138,22 @@ export default function AdminKeynote({
   /* ---------------------------------- DELETE --------------------------------- */
 
   const handleDelete = async (id: number) => {
+    // try {
+    //   await apiClient.delete(`/keynotes/${id}`);
+    //   fetchData();
+    // } catch (err) {
+    //   console.error(err);
+    // }
+
     try {
-      await apiClient.delete(`/keynotes/${id}`);
-      fetchData();
+      // const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      const res = await fetch(`http://localhost:8000/api/v1/keynotes/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Delete failed:", errorText);
+        return;
+      }
+      setKeynotes((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
       console.error(err);
     }
