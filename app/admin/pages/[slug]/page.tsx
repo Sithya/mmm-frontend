@@ -4,12 +4,18 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import TextEditor from '@/app/components/AdminComponent/TextEditor';
 
+interface PageSection {
+  id: string;
+  type: 'text' | 'news' | 'keynotes';
+  data: any;
+}
+
 interface Page {
   id: number;
   slug: string;
   title: string;
-  content: string | null;
-  component: string | null;
+  component: string;
+  json: { sections: PageSection[] };
 }
 
 // Build API base robustly: prefer NEXT_PUBLIC_API_BASE_URL, fall back to localhost.
@@ -36,38 +42,26 @@ export default function AdminPageEditor() {
   const router = useRouter();
   const { slug } = useParams<{ slug: string }>();
 
-  const [content, setContent] = useState('');
-  const [pageId, setPageId] = useState<number | null>(null);
-  const [title, setTitle] = useState('');
-  const [componentName, setComponentName] = useState('');
+  const [page, setPage] = useState<Page | null>(null);
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Fetch page by slug
   useEffect(() => {
     if (!slug) return;
 
     const fetchPage = async () => {
       try {
-        const res = await fetch(`${API_URL}/slug/${slug}`, {
-          cache: 'no-store',
-        });
+        const res = await fetch(`${API_URL}/slug/${slug}`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to fetch page');
+        const data: Page = await res.json();
 
-        if (res.status === 404) {
-          // Page not created yet
-          setTitle(slug.replace('-', ' '));
-          setComponentName(`${slug}Page`);
-          setContent('');
-        } else if (!res.ok) {
-          throw new Error('Failed to fetch page');
-        } else {
-          const page: Page = await res.json();
-          setPageId(page.id);
-          setTitle(page.title);
-          setComponentName(page.component || '');
-          setContent(page.content || '');
+        // initialize sections if empty
+        if (!data.json?.sections || data.json.sections.length === 0) {
+          data.json = { sections: [{ id: `text-1`, type: 'text', data: { html: '' } }] };
         }
+
+        setPage(data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -78,28 +72,43 @@ export default function AdminPageEditor() {
     fetchPage();
   }, [slug]);
 
-  // Save page
+  const handleSectionChange = (index: number, html: string) => {
+    if (!page) return;
+    const updatedSections = [...page.json.sections];
+    updatedSections[index] = { ...updatedSections[index], data: { html } };
+    setPage({ ...page, json: { sections: updatedSections } });
+  };
+
+  const addTextSection = () => {
+    if (!page) return;
+    const newSection: PageSection = {
+      id: `text-${page.json.sections.length + 1}`,
+      type: 'text',
+      data: { html: '' },
+    };
+    setPage({ ...page, json: { sections: [...page.json.sections, newSection] } });
+  };
+
   const handleSubmit = async () => {
-    if (saving || !slug) return;
+    if (!page) return;
     setSaving(true);
 
     try {
-      const url = pageId ? `${API_URL}/${pageId}` : API_URL;
-      const method = pageId ? 'PATCH' : 'POST';
+      const url = page.id ? `${API_URL}/${page.id}` : API_URL;
+      const method = page.id ? 'PATCH' : 'POST';
 
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          slug,
-          title,
-          content,
-          component: componentName,
+          slug: page.slug,
+          title: page.title,
+          component: page.component,
+          json: page.json,
         }),
       });
 
       if (!res.ok) throw new Error('Failed to save');
-
       router.push(`/${slug}`);
     } catch (err) {
       console.error(err);
@@ -110,19 +119,18 @@ export default function AdminPageEditor() {
   };
 
   if (loading) return <p className="p-6 text-center">Loading...</p>;
+  if (!page) return <p className="p-6 text-center">Page not found</p>;
 
   return (
     <div className="max-h-screen bg-gray-50 p-6 mt-20">
-      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg p-8 flex flex-col h-[85vh]">
-        <h1 className="text-2xl font-bold text-purple-900 mb-4">
-          Edit {slug}
-        </h1>
+      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg p-8 flex flex-col h-[87vh]">
+        <h1 className="text-3xl font-bold text-purple-900 mb-4">Edit {slug}</h1>
 
         {/* Tabs */}
         <div className="flex border-b border-purple-300 mb-4">
           <button
             onClick={() => setActiveTab('edit')}
-            className={`px-4 py-2 font-semibold ${
+            className={`px-4 py-2 font-semibold text-lg ${
               activeTab === 'edit'
                 ? 'border-b-4 border-purple-700 text-purple-900'
                 : 'border-b-4 border-transparent text-purple-700'
@@ -132,7 +140,7 @@ export default function AdminPageEditor() {
           </button>
           <button
             onClick={() => setActiveTab('preview')}
-            className={`ml-4 px-4 py-2 font-semibold ${
+            className={`ml-4 px-4 py-2 font-semibold text-lg ${
               activeTab === 'preview'
                 ? 'border-b-4 border-purple-700 text-purple-900'
                 : 'border-b-4 border-transparent text-purple-700'
@@ -143,21 +151,40 @@ export default function AdminPageEditor() {
         </div>
 
         {/* Editor / Preview */}
-        <div className="flex-1 overflow-y-auto pr-2">
-          {activeTab === 'edit' ? (
-            <TextEditor
-              initialValue={content}
-              onChange={setContent}
-              allowMap
-              allowImage
-            />
-          ) : (
-            <div className="bg-gray-50 border border-purple-200 rounded-xl p-6">
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: content || '<p>No content to preview.</p>',
-                }}
-              />
+        <div className="flex-1 overflow-y-auto pr-2 space-y-6">
+          {page.json.sections.map((section, index) => (
+            <div key={section.id} className='w-full'>
+              {activeTab === 'edit' ? (
+                <div className="border border-purple-200 rounded-xl p-4 mb-6">
+                  <p className="font-semibold mb-4">Text Section {index + 1}</p>
+                  <div className="h-[57vh] overflow-y-auto">
+                  <TextEditor
+                    initialValue={section.data.html}
+                    onChange={(html) => handleSectionChange(index, html)}
+                    allowMap
+                    allowImage
+                  />
+                  </div>
+                </div>
+              ) : (
+                <div className="ql-snow max-w-5xl my-6 bg-gray-50 border border-purple-200 rounded-xl p-6">
+                  <div
+                    className="ql-editor"
+                    dangerouslySetInnerHTML={{ __html: section.data.html }}
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+
+          {activeTab === 'edit' && (
+            <div className='flex justify-center'>
+            <button
+              onClick={addTextSection}
+              className="mt-4 px-6 py-2  text-purple-950 rounded-lg shadow hover:bg-purple-800 transition border-purple-300 border-2 "
+            >
+              + Add Text Section
+            </button>
             </div>
           )}
         </div>

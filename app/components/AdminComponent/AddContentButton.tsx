@@ -9,7 +9,7 @@ export default function EditPageButton() {
     <Link href={`/admin/pages/${slug}`}>
       <div className="flex justify-center mt-8">
         <div
-          className="px-6 py-2 bg-purple-800 text-white rounded-lg shadow hover:bg-purple-900 transition font-medium duration-300 mb-10">
+          className="px-6 py-2 mt-4 text-purple-950 border-purple-300 border-2  rounded-lg shadow hover:bg-purple-200 transition font-medium duration-300 mb-10 hover:border-none ">
           {addContent ? '+ Add Content' : 'Loading...'}
         </div>
       </div>

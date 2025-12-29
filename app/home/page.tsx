@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import HomePageComponent from '../components/UserComponent/HomePageCompo'
 import Banner from '../components/UserComponent/Banner'
 import ImportantDatesServer from '../components/HybridComponent/ImportanceDate/ImportantDatesServer'
+import PageRenderer from '../components/AdminComponent/PageRenderer'
 
 const HomePage = () => {
   return (
@@ -10,7 +11,10 @@ const HomePage = () => {
       <Banner />
       <div className='text-center text-purple-900 text-4xl font-bold mt-9 mb-10'>WELCOME TO MMM2027</div>
       <div className="flex justify-around px-[90px] align">
+        <div className=''>
+        <PageRenderer slug="home" />
         <HomePageComponent />
+        </div>
         <div className=''>
         <ImportantDatesServer />
         </div>

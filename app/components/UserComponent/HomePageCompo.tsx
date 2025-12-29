@@ -3,17 +3,13 @@ import React from 'react'
 import NewsCard from '../HybridComponent/NewsCard';
 import AddContentButton from '../AdminComponent/AddContentButton';
 import FetchPageContent from '../AdminComponent/FetchPageContent';
+import PageRenderer from '../AdminComponent/PageRenderer';
 
 const HomePageComponent = () => {
   return (
     <>
-      <div className='flex'>
-        <div className='mb-[100px] flex flex-col gap-30'>
-          <FetchPageContent />
+        <div className='felx justify-center'>
           <AddContentButton />
-          <NewsCard />
-        </div>
-
       </div>
 
     </>

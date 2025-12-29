@@ -35,10 +35,14 @@ export default function NewsCard({ pageId }: Props) {
 
   const isAdmin = true; 
 
-  /* Fetch news */
+useEffect(() => {
   const fetchNews = async () => {
+    if (!pageId) return; // do nothing if no pageId
+
     try {
+      // Fetch all news for the page, no limit
       const res = await fetch(`${API_URL}`);
+      if (!res.ok) throw new Error('Failed to fetch news');
       const data = await res.json();
       setNewsData(data);
     } catch (err) {
@@ -46,9 +50,9 @@ export default function NewsCard({ pageId }: Props) {
     }
   };
 
-  useEffect(() => {
-    fetchNews();
-  }, []);
+  fetchNews();
+}, [pageId]);
+
 
   /* CREATE / UPDATE */
   const handleSave = async () => {
