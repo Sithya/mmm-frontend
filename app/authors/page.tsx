@@ -1,19 +1,22 @@
 import React from 'react'
 import Banner from '../components/UserComponent/Banner'
-import FetchPageContent from '../components/AdminComponent/FetchPageContent'
 import AuthorButton from '../components/AdminComponent/PagesButton.tsx/AuthourButton'
 import ImportantDatesServer from '../components/HybridComponent/ImportanceDate/ImportantDatesServer'
+import PageRenderer from '../components/AdminComponent/PageRenderer'
 
 const AuthorPage = () => {
   return (
     <>
        <Banner />
-        <div className='flex my-10 mx-[90px]'> 
-          <div className='max-w-5xl'>
-          <FetchPageContent />
-          <AuthorButton />
+        <div className="flex gap-20 justify-center my-10">
+          <div className="max-w-7xl">
+            <PageRenderer slug="authors" />
+            <AuthorButton />
           </div>
-          <ImportantDatesServer />
+
+          <div>
+            <ImportantDatesServer />
+          </div>
         </div>
     </>
   )

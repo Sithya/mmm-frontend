@@ -27,61 +27,61 @@ export default function Navbar() {
     {
       title: "Calls",
       href: "/calls",
-      dropdown: [
-        {
-          title: "REGULAR PAPER",
-          items: [
-            // { label: "REGULAR PAPER", href: "#regular-paper" },
-            { label: "Submission Guidelines", href: "#regular-guidelines" },
-            { label: "Important Requirements", href: "#regular-important" },
-          ]
-        },
-        {
-          title: "SPECIAL SESSIONS",
-          items: [
-            { label: "Submission Guidelines", href: "#special-guidelines" },
-            { label: "Important Requirements", href: "#special-important" },
-          ]
-        },
-        {
-          title: "VIDEO BROWSER",
-          items: [
-            { label: "Submission Guidelines", href: "#video-guidelines" },
-            { label: "Important Requirements", href: "#video-important" },
-          ]
-        },
-        {
-          title: "TOPICS OF INTEREST",
-          items: [
-            { label: "Multimedia Content Analysis", href: "#topic-analysis" },
-            { label: "Multimedia Signal Processing and Communications", href: "#topic-signal" },
-          ]
-        },
-      ]
+      // dropdown: [
+      //   {
+      //     title: "REGULAR PAPER",
+      //     items: [
+      //       // { label: "REGULAR PAPER", href: "#regular-paper" },
+      //       { label: "Submission Guidelines", href: "#regular-guidelines" },
+      //       { label: "Important Requirements", href: "#regular-important" },
+      //     ]
+      //   },
+      //   {
+      //     title: "SPECIAL SESSIONS",
+      //     items: [
+      //       { label: "Submission Guidelines", href: "#special-guidelines" },
+      //       { label: "Important Requirements", href: "#special-important" },
+      //     ]
+      //   },
+      //   {
+      //     title: "VIDEO BROWSER",
+      //     items: [
+      //       { label: "Submission Guidelines", href: "#video-guidelines" },
+      //       { label: "Important Requirements", href: "#video-important" },
+      //     ]
+      //   },
+      //   {
+      //     title: "TOPICS OF INTEREST",
+      //     items: [
+      //       { label: "Multimedia Content Analysis", href: "#topic-analysis" },
+      //       { label: "Multimedia Signal Processing and Communications", href: "#topic-signal" },
+      //     ]
+      //   },
+      // ]
     },
 
     {
       title: "Authors",
       href: "/authors",
-      dropdown: [
-        {
-          title: "CAMERA READY INSTRUCTION",
-          items: [
-            { label: "Required Submission Documents", href: "#camera-docs" },
-            { label: "Submission Portal", href: "#camera-portal" },
-            { label: "Important", href: "#camera-important" },
-          ]
-        },
-        {
-          title: "SUBMISSION GUIDELINE",
-          items: [
-            { label: "General Guidelines", href: "#sub-general" },
-            { label: "Regular Papers", href: "#sub-regular" },
-            { label: "Special Session Papers", href: "#sub-special" },
-            { label: "Video Browser Showdown Papers", href: "#sub-video" },
-          ]
-        }
-      ]
+      // dropdown: [
+      //   {
+      //     title: "CAMERA READY INSTRUCTION",
+      //     items: [
+      //       { label: "Required Submission Documents", href: "#camera-docs" },
+      //       { label: "Submission Portal", href: "#camera-portal" },
+      //       { label: "Important", href: "#camera-important" },
+      //     ]
+      //   },
+      //   {
+      //     title: "SUBMISSION GUIDELINE",
+      //     items: [
+      //       { label: "General Guidelines", href: "#sub-general" },
+      //       { label: "Regular Papers", href: "#sub-regular" },
+      //       { label: "Special Session Papers", href: "#sub-special" },
+      //       { label: "Video Browser Showdown Papers", href: "#sub-video" },
+      //     ]
+      //   }
+      // ]
     },
     { title: "Organization", href: "/organization" },
     { title: "Register", href: "/register" },

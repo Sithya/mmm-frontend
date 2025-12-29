@@ -7,21 +7,26 @@ import PageRenderer from '../components/AdminComponent/PageRenderer'
 const HomePage = () => {
   return (
     <>
-    <div className="">
       <Banner />
-      <div className='text-center text-purple-900 text-4xl font-bold mt-9 mb-10'>WELCOME TO MMM2027</div>
-      <div className="flex justify-around px-[90px] align">
-        <div className=''>
-        <PageRenderer slug="home" />
-        <HomePageComponent />
-        </div>
-        <div className=''>
-        <ImportantDatesServer />
-        </div>
+
+      <div className="text-center text-purple-900 text-4xl font-bold my-10">
+        WELCOME TO MMM2027
       </div>
-    </div>
+
+        <div className="flex gap-20 justify-center my-10">
+          <div className="max-w-7xl">
+            <PageRenderer slug="home" />
+            <HomePageComponent />
+          </div>
+
+          <div>
+            <ImportantDatesServer />
+          </div>
+        </div>
+
     </>
   )
 }
+
 
 export default HomePage

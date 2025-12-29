@@ -1,4 +1,5 @@
 import NewsCard from "../HybridComponent/NewsCard";
+import Keynotes from "../UserComponent/Keynotes";
 
 const API_BASE = process.env.API_INTERNAL_URL;
 
@@ -74,13 +75,13 @@ export default async function PageRenderer({ slug }: { slug: string }) {
               />
             );
 
-          // case 'keynotes':
-          //   return (
-          //     <KeynoteCard
-          //       key={section.id}
-          //       pageId={section.data.page_id}
-          //     />
-          //   );
+          case 'keynotes':
+            return (
+              <Keynotes
+                key={section.id}
+                pageId={section.data.page_id}
+              />
+            );
 
           default:
             return null;

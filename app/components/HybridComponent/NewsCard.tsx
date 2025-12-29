@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface NewsItem {
   id: number;
@@ -28,30 +29,29 @@ export default function NewsCard({ pageId }: Props) {
   const [newNews, setNewNews] = useState<Partial<NewsItem>>({
     title: "",
     content: "",
-    published_at: "",
     link_text: "",
     link_url: "",
   });
 
-  const isAdmin = true; 
+  const isAdmin = true;
 
-useEffect(() => {
-  const fetchNews = async () => {
-    if (!pageId) return; // do nothing if no pageId
+  useEffect(() => {
+    const fetchNews = async () => {
+      if (!pageId) return; // do nothing if no pageId
 
-    try {
-      // Fetch all news for the page, no limit
-      const res = await fetch(`${API_URL}`);
-      if (!res.ok) throw new Error('Failed to fetch news');
-      const data = await res.json();
-      setNewsData(data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+      try {
+        // Fetch all news for the page, no limit
+        const res = await fetch(`${API_URL}`);
+        if (!res.ok) throw new Error('Failed to fetch news');
+        const data = await res.json();
+        setNewsData(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
-  fetchNews();
-}, [pageId]);
+    fetchNews();
+  }, [pageId]);
 
 
   /* CREATE / UPDATE */
@@ -72,7 +72,7 @@ useEffect(() => {
         res = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...newNews, page_id: pageId || 2 }),
+          body: JSON.stringify({ ...newNews, page_id: pageId || 2, published_at: new Date().toISOString() }),
         });
       }
 
@@ -171,9 +171,8 @@ useEffect(() => {
                 </h2>
 
                 <p
-                  className={`text-gray-700 transition-all duration-300 ${
-                    expanded ? "line-clamp-none" : "line-clamp-1"
-                  }`}
+                  className={`text-gray-700 transition-all duration-300 ${expanded ? "line-clamp-none" : "line-clamp-1"
+                    }`}
                 >
                   {item.link_text ? (
                     <>
@@ -195,21 +194,25 @@ useEffect(() => {
 
               {isAdmin && (
                 <div
-                  className="absolute top-3 right-3 flex gap-2"
+                  className="absolute top-3 right-3 flex"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
-                    className="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700"
                     onClick={() => openEditModal(item)}
+                    className="p-1 rounded-full text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition"
+                    aria-label="Edit news"
                   >
-                    Edit
+                    <Pencil size={20} />
                   </button>
+
                   <button
-                    className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
                     onClick={() => handleDelete(item.id)}
+                    className="p-2 rounded-full text-red-600 hover:bg-red-100 hover:text-red-700 transition"
+                    aria-label="Delete news"
                   >
-                    Delete
+                    <Trash2 size={20} />
                   </button>
+
                 </div>
               )}
             </div>
@@ -221,7 +224,18 @@ useEffect(() => {
         <div className="flex justify-center mt-6">
           <button
             onClick={() => setShowCreate(true)}
-            className="px-6 py-2 bg-purple-800 text-white rounded-lg shadow hover:bg-purple-900 transition font-medium"
+            className="
+              px-6 py-2 my-4
+              font-medium rounded-lg
+              border-2 border-purple-300
+              bg-white text-purple-950
+              transition-all duration-300 ease-out
+              hover:bg-purple-700 hover:text-white
+              hover:-translate-y-3
+              active:translate-y-0
+              disabled:opacity-70
+              disabled:cursor-not-allowed
+            "
           >
             + Create News
           </button>
@@ -240,7 +254,7 @@ useEffect(() => {
               <input
                 type="text"
                 placeholder="Title"
-                className="w-full border border-purple-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
                 value={newNews.title}
                 onChange={(e) =>
                   setNewNews({ ...newNews, title: e.target.value })
@@ -249,25 +263,16 @@ useEffect(() => {
               <textarea
                 rows={3}
                 placeholder="Detail"
-                className="w-full border border-purple-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
                 value={newNews.content}
                 onChange={(e) =>
                   setNewNews({ ...newNews, content: e.target.value })
                 }
               ></textarea>
               <input
-                type="date"
-                placeholder="Published date"
-                className="w-full border border-purple-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
-                value={newNews.published_at?.slice(0, 10) || ""}
-                onChange={(e) =>
-                  setNewNews({ ...newNews, published_at: e.target.value })
-                }
-              />
-              <input
                 type="text"
                 placeholder="Link text (optional)"
-                className="w-full border border-purple-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
                 value={newNews.link_text}
                 onChange={(e) =>
                   setNewNews({ ...newNews, link_text: e.target.value })
@@ -276,7 +281,7 @@ useEffect(() => {
               <input
                 type="text"
                 placeholder="Link URL (optional)"
-                className="w-full border border-purple-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
                 value={newNews.link_url}
                 onChange={(e) =>
                   setNewNews({ ...newNews, link_url: e.target.value })
@@ -303,7 +308,7 @@ useEffect(() => {
               </button>
               <button
                 onClick={handleSave}
-                className="px-5 py-2 bg-purple-800 text-white rounded-lg shadow hover:bg-purple-900 transition"
+                className="px-5 py-2 bg-purple-700 text-white rounded-lg shadow hover:bg-purple-800 transition font-medium"
               >
                 {editNews ? "Update" : "Create"}
               </button>

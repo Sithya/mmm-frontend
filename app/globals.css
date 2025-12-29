@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "react-datepicker/dist/react-datepicker.css";
 
 @layer base {
   * {
@@ -61,6 +62,18 @@
   outline: 2px solid #c0d8ff !important;
   outline-offset: 1px;
 }
+
+.ql-container {
+  font-size: 16px;
+}
+
+.ql-editor {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 24px;
+  line-height: 1.75;
+}
+
 
 
   /* .ql-editor {
