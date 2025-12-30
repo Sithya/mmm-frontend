@@ -1,5 +1,5 @@
+import Keynotes from "../HybridComponent/KeyNote";
 import NewsCard from "../HybridComponent/NewsCard";
-import Keynotes from "../UserComponent/Keynotes";
 
 const API_BASE = process.env.API_INTERNAL_URL;
 
@@ -80,6 +80,7 @@ export default async function PageRenderer({ slug }: { slug: string }) {
               <Keynotes
                 key={section.id}
                 pageId={section.data.page_id}
+                isAdmin={false}
               />
             );
 
