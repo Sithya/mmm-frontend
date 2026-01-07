@@ -86,7 +86,7 @@ export default async function PageRenderer({ slug }: { slug: string }) {
               <Keynotes
                 key={section.id}
                 pageId={section.data.page_id}
-                isAdmin={true}
+                isAdmin={false}
               />
             );
 

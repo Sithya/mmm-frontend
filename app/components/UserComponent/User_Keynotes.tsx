@@ -96,7 +96,7 @@ function formatDate(s?: string): string {
 
 function KeynoteCard({ keynote }: { keynote: Keynote }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow w-[1024px]">
       <div className="grid grid-cols-[1fr,200px] items-stretch">
         {/* Left: Content */}
         <div className="p-6 h-full">

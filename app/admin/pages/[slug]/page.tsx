@@ -208,7 +208,7 @@ export default function AdminPageEditor() {
                     <p className="font-semibold mb-4">
                       Text Section {index + 1}
                     </p>
-                    <div className="h-[57vh] overflow-y-auto">
+                    <div className="h-auto overflow-y-auto pb-20">
                       <TextEditor
                         initialValue={section.data.html}
                         onChange={(html) => handleSectionChange(index, html)}
