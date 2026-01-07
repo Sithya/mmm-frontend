@@ -54,11 +54,16 @@ class ApiClient {
 
       if (!response.ok) {
         return {
-          errors: data.errors || { message: [data.message || 'An error occurred'] },
+          errors: data?.errors || data?.error?.details || { message: [data?.message || data?.error?.message || 'An error occurred'] },
         };
       }
 
-      return { data };
+      // Extract data from ApiResponse format if present: {success: true, data: {...}, message: "..."}
+      // If backend returns {success: true, data: [...]}, extract the data field
+      // Otherwise, return the data as-is for backward compatibility
+      const extractedData = data?.success !== undefined && data?.data !== undefined ? data.data : data;
+
+      return { data: extractedData };
     } catch (error) {
       console.error('API request failed:', error);
       return {

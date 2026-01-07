@@ -22,8 +22,16 @@ interface Keynote {
 interface Page { id: number; slug: string; }
 
 const fetchKeynotes = async (): Promise<Keynote[]> => {
-  const res = await apiClient.get<Keynote[]>('/keynotes');
-  return res.data ?? [];
+  const res = await apiClient.get<Keynote[] | { items: Keynote[] }>('/keynotes');
+  // Handle both direct array and paginated format {items: [...], pagination: {...}}
+  if (Array.isArray(res.data)) {
+    return res.data;
+  }
+  // If paginated format, return items
+  if (res.data && typeof res.data === 'object' && 'items' in res.data) {
+    return (res.data as { items: Keynote[] }).items;
+  }
+  return [];
 };
 
 const fetchPageIdBySlug = async (slug: string): Promise<number | null> => {

@@ -1,24 +1,31 @@
 import Keynotes from "../HybridComponent/KeyNote";
 import NewsCard from "../HybridComponent/NewsCard";
+import ImportantDatesServer from "../HybridComponent/ImportanceDate/ImportantDatesServer";
 
 const API_BASE = process.env.API_INTERNAL_URL;
 
 async function getPage(slug: string) {
   const res = await fetch(`${process.env.API_INTERNAL_URL}/pages/slug/${slug}`, { cache: 'no-store' });
-  return res.json();
+  const response = await res.json();
+  // Handle both old format (direct page object) and new format ({success, data, message})
+  return response.data || response;
 }
 
 async function hasNews(pageId: number) {
   const res = await fetch(`${API_BASE}/news?page_id=${pageId}`);
   if (!res.ok) return false;
-  const data = await res.json();
+  const response = await res.json();
+  // Handle both old format (array) and new format ({success, data, message})
+  const data = Array.isArray(response) ? response : (response.data || []);
   return data.length > 0;
 }
 
 async function hasKeynotes(pageId: number) {
   const res = await fetch(`${API_BASE}/keynotes?page_id=${pageId}`);
   if (!res.ok) return false;
-  const data = await res.json();
+  const response = await res.json();
+  // Handle both old format (array) and new format ({success, data, message})
+  const data = Array.isArray(response) ? response : (response.data || []);
   return data.length > 0;
 }
 
@@ -59,7 +66,7 @@ export default async function PageRenderer({ slug }: { slug: string }) {
         switch (section.type) {
           case 'text':
             return (
-              <div key={section.id} className="ql-snow max-w-5xl my-6">
+              <div key={section.id} className="ql-snow max-w-5xl my-6 text-gray-900">
                 <div
                   className="ql-editor"
                   dangerouslySetInnerHTML={{ __html: section.data.html }}
@@ -82,6 +89,13 @@ export default async function PageRenderer({ slug }: { slug: string }) {
                 pageId={section.data.page_id}
                 isAdmin={false}
               />
+            );
+
+          case 'important-dates':
+            return (
+              <div key={section.id} className="my-6">
+                <ImportantDatesServer />
+              </div>
             );
 
           default:

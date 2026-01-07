@@ -16,11 +16,14 @@ export default async function ImportantDatesServer() {
   const json = await res.json();
 
   // Map API items to the format the client expects
-  const dates = json.data.items.map((item: DateItem) => ({
-    id: item.id,
-    due_date: item.due_date,
-    title: item.description,
-  }));
+  const dates = json.data.items
+    .map((item: DateItem) => ({
+      id: item.id,
+      due_date: item.due_date,
+      title: item.description,
+    }))
+    // Sort by due_date ascending to match the sidebar format
+    .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
 
   return <ImportantDates initialDates={dates} />;
 }

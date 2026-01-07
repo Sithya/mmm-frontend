@@ -64,12 +64,26 @@ export default function AdminKeynote({
   const fetchData = async () => {
     setLoading(true);
     try {
-      const keynotesRes = await apiClient.get<Keynote[]>('/keynotes');
-      setKeynotes(keynotesRes.data || []);
+      const keynotesRes = await apiClient.get<Keynote[] | { items: Keynote[] }>('/keynotes');
+      // Handle both direct array and paginated format {items: [...], pagination: {...}}
+      let keynotes: Keynote[] = [];
+      if (Array.isArray(keynotesRes.data)) {
+        keynotes = keynotesRes.data;
+      } else if (keynotesRes.data && typeof keynotesRes.data === 'object' && 'items' in keynotesRes.data) {
+        keynotes = (keynotesRes.data as { items: Keynote[] }).items;
+      }
+      setKeynotes(keynotes);
 
       if (!pageId) {
-        const pagesRes = await apiClient.get<Page[]>('/pages');
-        const page = pagesRes.data?.find(p => p.slug === pageSlug);
+        const pagesRes = await apiClient.get<Page[] | { items: Page[] }>('/pages');
+        // Handle both direct array and paginated format
+        let pages: Page[] = [];
+        if (Array.isArray(pagesRes.data)) {
+          pages = pagesRes.data;
+        } else if (pagesRes.data && typeof pagesRes.data === 'object' && 'items' in pagesRes.data) {
+          pages = (pagesRes.data as { items: Page[] }).items;
+        }
+        const page = pages.find(p => p.slug === pageSlug);
         if (page) setCurrentPageId(page.id);
       }
     } catch (err) {

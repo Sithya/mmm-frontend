@@ -146,7 +146,7 @@ export default function ImportantDates({ initialDates }: Props) {
 
   return (
     <>
-      <div className="w-full max-w-sm border rounded-xl p-6 shadow-sm bg-white border-purple-800 text-center mt-8">
+      <div className="w-full max-w-sm border rounded-xl p-6 shadow-sm bg-white border-purple-800 text-center mt-8 text-gray-900">
         <h2 className="text-xl font-bold text-[#2A0845]">IMPORTANT DATES</h2>
 
         <p className="text-sm text-gray-700 mt-3 leading-relaxed">
@@ -169,7 +169,7 @@ export default function ImportantDates({ initialDates }: Props) {
                 key={item.id}
                 onClick={() => setExpandedId(expanded ? null : item.id)}
                 className={`cursor-pointer border rounded-xl overflow-hidden transition-all duration-300 min-h-[70px] ${
-                  expanded ? "shadow-sm" : "bg-white hover:bg-purple-50/40"
+                  expanded ? "shadow-sm bg-purple-50" : "bg-purple-50 hover:bg-purple-100"
                 }`}
               >
                 <div className="flex items-stretch">

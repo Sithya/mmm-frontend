@@ -19,107 +19,128 @@ let iframeRegistered = false;
 const registerIframeBlot = async () => {
   if (typeof window === "undefined" || iframeRegistered) return;
 
-  const QuillModule = await import("react-quill-new");
-  const Quill =
-    QuillModule.Quill ||
-    QuillModule.default?.Quill ||
-    QuillModule.default ||
-    QuillModule;
-
-  const Embed = Quill.import("blots/embed") as any;
-  const BlockEmbed = Quill.import("blots/block/embed") as any;
-
-
-  class ImageBlot extends Embed {
-  static blotName = "image";
-  static tagName = "img";
-
-  static create(value: string) {
-    const node = super.create() as HTMLImageElement;
-    node.src = value;
-    node.style.width = "auto";
-    node.style.height = "auto";
-    node.style.borderRadius = "6px";
-    node.style.margin = "4px";
-    return node;
-  }
-
-  static value(node: HTMLElement) {
-    return node.getAttribute("src");
-  }
-}
-
-
-  class IframeBlot extends BlockEmbed {
-    static blotName = "iframe";
-    static tagName = "iframe";
-
-    static create(value: string) {
-      const node = super.create() as HTMLElement;
-      node.setAttribute("src", value);
-      node.setAttribute("frameborder", "0");
-      node.setAttribute("allowfullscreen", "");
-      node.style.width = "100%";
-      node.style.minHeight = "450px";
-      return node;
-    }
-
-    static value(node: HTMLElement) {
-      return node.getAttribute("src");
-    }
-  }
-  class VideoBlot extends BlockEmbed {
-    static blotName = "video";
-    static tagName = "iframe";
-
-    static create(value: string) {
-      const node = super.create() as HTMLElement;
-      node.setAttribute("src", value);
-      node.setAttribute("frameborder", "0");
-      node.setAttribute("allowfullscreen", "");
-      node.classList.add("resizable-iframe");
-      node.style.width = "100%";
-      node.style.minHeight = "300px";
-      node.style.borderRadius = "10px";
-      return node;
-    }
-
-    static value(node: HTMLElement) {
-      return node.getAttribute("src");
-    }
-  }
-
-  
   try {
+    // Import Quill - try quill package first, then react-quill-new
+    let Quill: any;
+    try {
+      const QuillModule = await import("quill");
+      Quill = QuillModule.default || QuillModule;
+    } catch {
+      // Fallback to react-quill-new if quill package not available
+      const ReactQuillModule = await import("react-quill-new");
+      Quill =
+        ReactQuillModule.Quill ||
+        ReactQuillModule.default?.Quill ||
+        ReactQuillModule.default?.reactQuill?.Quill ||
+        ReactQuillModule.default;
+    }
+
+    if (!Quill || typeof Quill.import !== "function") {
+      console.error("Quill not properly loaded");
+      return;
+    }
+
+    const Embed = Quill.import("blots/embed") as any;
+    const BlockEmbed = Quill.import("blots/block/embed") as any;
+
+    class ImageBlot extends Embed {
+      static blotName = "image";
+      static tagName = "img";
+
+      static create(value: string) {
+        const node = super.create() as HTMLImageElement;
+        node.src = value;
+        node.style.width = "auto";
+        node.style.height = "auto";
+        node.style.borderRadius = "6px";
+        node.style.margin = "4px";
+        return node;
+      }
+
+      static value(node: HTMLElement) {
+        return node.getAttribute("src");
+      }
+    }
+
+    class IframeBlot extends BlockEmbed {
+      static blotName = "iframe";
+      static tagName = "iframe";
+
+      static create(value: string) {
+        const node = super.create() as HTMLElement;
+        node.setAttribute("src", value);
+        node.setAttribute("frameborder", "0");
+        node.setAttribute("allowfullscreen", "");
+        node.style.width = "100%";
+        node.style.minHeight = "450px";
+        return node;
+      }
+
+      static value(node: HTMLElement) {
+        return node.getAttribute("src");
+      }
+    }
+    class VideoBlot extends BlockEmbed {
+      static blotName = "video";
+      static tagName = "iframe";
+
+      static create(value: string) {
+        const node = super.create() as HTMLElement;
+        node.setAttribute("src", value);
+        node.setAttribute("frameborder", "0");
+        node.setAttribute("allowfullscreen", "");
+        node.classList.add("resizable-iframe");
+        node.style.width = "100%";
+        node.style.minHeight = "300px";
+        node.style.borderRadius = "10px";
+        return node;
+      }
+
+      static value(node: HTMLElement) {
+        return node.getAttribute("src");
+      }
+    }
+
     Quill.register(IframeBlot as any);
     Quill.register(VideoBlot as any);
     Quill.register(ImageBlot as any);
     iframeRegistered = true;
-  } catch { }
+  } catch (error) {
+    console.error("Error registering Quill blots:", error);
+  }
 };
 
 const registerFontSizes = async () => {
-  const QuillModule = await import("react-quill-new");
-  const Quill =
-    QuillModule.Quill ||
-    QuillModule.default?.Quill ||
-    QuillModule.default;
+  try {
+    // Import Quill - try quill package first, then react-quill-new
+    let Quill: any;
+    try {
+      const QuillModule = await import("quill");
+      Quill = QuillModule.default || QuillModule;
+    } catch {
+      // Fallback to react-quill-new if quill package not available
+      const ReactQuillModule = await import("react-quill-new");
+      Quill =
+        ReactQuillModule.Quill ||
+        ReactQuillModule.default?.Quill ||
+        ReactQuillModule.default?.reactQuill?.Quill ||
+        ReactQuillModule.default;
+    }
 
-  const Size = Quill.import("formats/size") as any;
+    if (!Quill || typeof Quill.import !== "function") {
+      console.error("Quill not properly loaded for font sizes");
+      return;
+    }
 
-  Size.whitelist = [
-    "12px",
-    "14px",
-    "16px",
-    "18px",
-    "20px",
-    "24px",
-    "32px",
-  ];
+    const Size = Quill.import("formats/size") as any;
 
-  Quill.register(Size, true);
+    Size.whitelist = ["12px", "14px", "16px", "18px", "20px", "24px", "32px"];
+
+    Quill.register(Size, true);
+  } catch (error) {
+    console.error("Error registering font sizes:", error);
+  }
 };
-
 
 // Component //
 export default function TextEditor({
@@ -140,18 +161,16 @@ export default function TextEditor({
   const [popupValue, setPopupValue] = useState("");
   const [popupDisplay, setPopupDisplay] = useState("");
 
-
   useEffect(() => {
     registerIframeBlot().then(() => setMounted(true));
   }, []);
 
-//   useEffect(() => {
-//   Promise.all([
-//     registerIframeBlot(),
-//     registerFontSizes(),
-//   ]).then(() => setMounted(true));
-// }, []);
-
+  //   useEffect(() => {
+  //   Promise.all([
+  //     registerIframeBlot(),
+  //     registerFontSizes(),
+  //   ]).then(() => setMounted(true));
+  // }, []);
 
   useEffect(() => setValue(initialValue), [initialValue]);
 
@@ -162,14 +181,19 @@ export default function TextEditor({
     [{ color: [] }, { background: [] }],
     [{ script: "sub" }, { script: "super" }],
     [{ header: "1" }, { header: "2" }, "blockquote", "code-block"],
-    [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
+    [
+      { list: "ordered" },
+      { list: "bullet" },
+      { indent: "-1" },
+      { indent: "+1" },
+    ],
     [{ direction: "rtl" }, { align: [] }],
     ["link", "video"],
     ["clean"],
   ];
 
   if (allowImage) toolbarOptions[toolbarOptions.length - 2].push("image");
-  if (allowMap) toolbarOptions[toolbarOptions.length - 2].push({map: "Map"});
+  if (allowMap) toolbarOptions[toolbarOptions.length - 2].push({ map: "Map" });
 
   // Handlers //
   const imageHandler = () => {
@@ -232,8 +256,7 @@ export default function TextEditor({
 
       setPopupOpen(false);
       return;
-    }
-    else if (popupType === "video") {
+    } else if (popupType === "video") {
       let videoUrl = popupValue.trim();
 
       // Convert normal YouTube link to embed URL
@@ -324,17 +347,26 @@ export default function TextEditor({
   }, [mounted]);
 
   if (!mounted)
-    return <div className="min-h-[200px] border p-4 rounded-sm">Loading editor...</div>;
+    return (
+      <div className="min-h-[200px] border p-4 rounded-sm">
+        Loading editor...
+      </div>
+    );
 
   const QuillComponent = ReactQuill as any;
 
   return (
-    <div className="relative w-full max-w-5xl mx-auto" style={{ height: "50vh", borderRadius: "10px" }}>
+    <div
+      className="relative w-full max-w-5xl mx-auto"
+      style={{ height: "50vh", borderRadius: "10px" }}
+    >
       {/* Popup Modal */}
       {popupOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[2000]">
           <div className="bg-white p-6 rounded-xl shadow-xl w-[350px] animate-scaleIn">
-            <h2 className="text-lg font-semibold mb-4 capitalize">Insert {popupType}</h2>
+            <h2 className="text-lg font-semibold mb-4 capitalize">
+              Insert {popupType}
+            </h2>
 
             <input
               type="text"
@@ -344,8 +376,8 @@ export default function TextEditor({
                 popupType === "map"
                   ? "Google Maps embed URL"
                   : popupType === "video"
-                    ? "YouTube/Vimeo video URL"
-                    : "https://example.com"
+                  ? "YouTube/Vimeo video URL"
+                  : "https://example.com"
               }
               className="w-full border rounded-lg px-3 py-2 mb-4 focus:ring focus:ring-purple-300 outline-none"
             />
@@ -360,8 +392,18 @@ export default function TextEditor({
             )}
 
             <div className="flex justify-end gap-3 mt-3">
-              <button onClick={() => setPopupOpen(false)} className="px-4 py-2 rounded-lg border hover:bg-gray-100">Cancel</button>
-              <button onClick={insertPopupValue} className="px-4 py-2 rounded-lg bg-purple-800 text-white hover:bg-purple-900">Insert</button>
+              <button
+                onClick={() => setPopupOpen(false)}
+                className="px-4 py-2 rounded-lg border hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={insertPopupValue}
+                className="px-4 py-2 rounded-lg bg-purple-800 text-white hover:bg-purple-900"
+              >
+                Insert
+              </button>
             </div>
           </div>
         </div>

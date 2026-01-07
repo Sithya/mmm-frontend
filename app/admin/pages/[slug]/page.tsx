@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import TextEditor from '@/app/components/AdminComponent/TextEditor';
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import TextEditor from "@/app/components/AdminComponent/TextEditor";
 
 interface PageSection {
   id: string;
-  type: 'text' | 'news' | 'keynotes';
+  type: "text" | "news" | "keynotes" | "important-dates";
   data: any;
 }
 
@@ -19,31 +19,34 @@ interface Page {
 }
 
 // Build API base robustly: prefer NEXT_PUBLIC_API_BASE_URL, fall back to localhost.
-let API_URL_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+let API_URL_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:8000/api/v1";
 
 // If running in the browser and the base uses a Docker internal host, rewrite it
 // so the browser can reach the backend during local development.
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   try {
     const parsed = new URL(API_URL_BASE);
-    if (parsed.hostname === 'backend-nginx') {
-      parsed.hostname = 'localhost';
-      parsed.port = '8000';
-      API_URL_BASE = parsed.toString().replace(/\/$/, '');
+    if (parsed.hostname === "backend-nginx") {
+      parsed.hostname = "localhost";
+      parsed.port = "8000";
+      API_URL_BASE = parsed.toString().replace(/\/$/, "");
     }
   } catch (e) {
     // ignore malformed env value and keep fallback
   }
 }
 
-const API_URL = `${API_URL_BASE.replace(/\/$/, '')}/pages`;
+const API_URL = `${API_URL_BASE.replace(/\/$/, "")}/pages`;
 
 export default function AdminPageEditor() {
   const router = useRouter();
   const { slug } = useParams<{ slug: string }>();
 
   const [page, setPage] = useState<Page | null>(null);
-  const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
+  const [activeTab, setActiveTab] = useState<"edit" | "preview">("edit");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -52,18 +55,28 @@ export default function AdminPageEditor() {
 
     const fetchPage = async () => {
       try {
-        const res = await fetch(`${API_URL}/slug/${slug}`, { cache: 'no-store' });
-        if (!res.ok) throw new Error('Failed to fetch page');
-        const data: Page = await res.json();
+        const res = await fetch(`${API_URL}/slug/${slug}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error("Failed to fetch page:", errorText);
+          throw new Error("Failed to fetch page");
+        }
+        const response = await res.json();
+        // Handle both old format (direct page object) and new format ({success, data, message})
+        const pageData: Page = response.data || response;
 
         // initialize sections if empty
-        if (!data.json?.sections || data.json.sections.length === 0) {
-          data.json = { sections: [{ id: `text-1`, type: 'text', data: { html: '' } }] };
+        if (!pageData.json?.sections || pageData.json.sections.length === 0) {
+          pageData.json = {
+            sections: [{ id: `text-1`, type: "text", data: { html: "" } }],
+          };
         }
 
-        setPage(data);
+        setPage(pageData);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching page:", err);
       } finally {
         setLoading(false);
       }
@@ -83,10 +96,26 @@ export default function AdminPageEditor() {
     if (!page) return;
     const newSection: PageSection = {
       id: `text-${page.json.sections.length + 1}`,
-      type: 'text',
-      data: { html: '' },
+      type: "text",
+      data: { html: "" },
     };
-    setPage({ ...page, json: { sections: [...page.json.sections, newSection] } });
+    setPage({
+      ...page,
+      json: { sections: [...page.json.sections, newSection] },
+    });
+  };
+
+  const addImportantDatesSection = () => {
+    if (!page) return;
+    const newSection: PageSection = {
+      id: `important-dates-${Date.now()}`,
+      type: "important-dates",
+      data: {},
+    };
+    setPage({
+      ...page,
+      json: { sections: [...page.json.sections, newSection] },
+    });
   };
 
   const handleSubmit = async () => {
@@ -95,11 +124,11 @@ export default function AdminPageEditor() {
 
     try {
       const url = page.id ? `${API_URL}/${page.id}` : API_URL;
-      const method = page.id ? 'PATCH' : 'POST';
+      const method = page.id ? "PATCH" : "POST";
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           slug: page.slug,
           title: page.title,
@@ -108,11 +137,20 @@ export default function AdminPageEditor() {
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Save failed:", errorText);
+        throw new Error("Failed to save");
+      }
+
+      // Handle response format (could be wrapped in {success, data, message})
+      const response = await res.json();
+      const savedPage = response.data || response;
+
       router.push(`/${slug}`);
     } catch (err) {
-      console.error(err);
-      alert('Failed to save content');
+      console.error("Error saving page:", err);
+      alert("Failed to save content. Check console for details.");
     } finally {
       setSaving(false);
     }
@@ -129,21 +167,21 @@ export default function AdminPageEditor() {
         {/* Tabs */}
         <div className="flex border-b border-purple-300 mb-4">
           <button
-            onClick={() => setActiveTab('edit')}
+            onClick={() => setActiveTab("edit")}
             className={`px-4 py-2 font-semibold text-lg ${
-              activeTab === 'edit'
-                ? 'border-b-4 border-purple-700 text-purple-900'
-                : 'border-b-4 border-transparent text-purple-700'
+              activeTab === "edit"
+                ? "border-b-4 border-purple-700 text-purple-900"
+                : "border-b-4 border-transparent text-purple-700"
             }`}
           >
             Edit
           </button>
           <button
-            onClick={() => setActiveTab('preview')}
+            onClick={() => setActiveTab("preview")}
             className={`ml-4 px-4 py-2 font-semibold text-lg ${
-              activeTab === 'preview'
-                ? 'border-b-4 border-purple-700 text-purple-900'
-                : 'border-b-4 border-transparent text-purple-700'
+              activeTab === "preview"
+                ? "border-b-4 border-purple-700 text-purple-900"
+                : "border-b-4 border-transparent text-purple-700"
             }`}
           >
             Preview
@@ -153,18 +191,38 @@ export default function AdminPageEditor() {
         {/* Editor / Preview */}
         <div className="flex-1 overflow-y-auto pr-2 space-y-6">
           {page.json.sections.map((section, index) => (
-            <div key={section.id} className='w-full'>
-              {activeTab === 'edit' ? (
-                <div className="border border-purple-200 rounded-xl p-4 mb-6">
-                  <p className="font-semibold mb-4">Text Section {index + 1}</p>
-                  <div className="h-[57vh] overflow-y-auto">
-                  <TextEditor
-                    initialValue={section.data.html}
-                    onChange={(html) => handleSectionChange(index, html)}
-                    allowMap
-                    allowImage
-                  />
+            <div key={section.id} className="w-full">
+              {activeTab === "edit" ? (
+                section.type === "important-dates" ? (
+                  <div className="border border-purple-200 rounded-xl p-4 mb-6">
+                    <p className="font-semibold mb-4">
+                      Important Dates Section
+                    </p>
+                    <p className="text-gray-600 text-sm">
+                      This section will display all important dates. No
+                      configuration needed.
+                    </p>
                   </div>
+                ) : (
+                  <div className="border border-purple-200 rounded-xl p-4 mb-6">
+                    <p className="font-semibold mb-4">
+                      Text Section {index + 1}
+                    </p>
+                    <div className="h-[57vh] overflow-y-auto">
+                      <TextEditor
+                        initialValue={section.data.html}
+                        onChange={(html) => handleSectionChange(index, html)}
+                        allowMap
+                        allowImage
+                      />
+                    </div>
+                  </div>
+                )
+              ) : section.type === "important-dates" ? (
+                <div className="my-6 bg-gray-50 border border-purple-200 rounded-xl p-6">
+                  <p className="text-gray-600 italic">
+                    Important Dates will be displayed here
+                  </p>
                 </div>
               ) : (
                 <div className="ql-snow max-w-5xl my-6 bg-gray-50 border border-purple-200 rounded-xl p-6">
@@ -177,14 +235,20 @@ export default function AdminPageEditor() {
             </div>
           ))}
 
-          {activeTab === 'edit' && (
-            <div className='flex justify-center'>
-            <button
-              onClick={addTextSection}
-              className="mt-4 px-6 py-2  text-purple-950 rounded-lg shadow hover:bg-purple-800 transition border-purple-300 border-2 "
-            >
-              + Add Text Section
-            </button>
+          {activeTab === "edit" && (
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={addTextSection}
+                className="mt-4 px-6 py-2 text-purple-950 rounded-lg shadow hover:bg-purple-800 transition border-purple-300 border-2"
+              >
+                + Add Text Section
+              </button>
+              <button
+                onClick={addImportantDatesSection}
+                className="mt-4 px-6 py-2 text-purple-950 rounded-lg shadow hover:bg-purple-800 transition border-purple-300 border-2"
+              >
+                + Add Important Dates
+              </button>
             </div>
           )}
         </div>
@@ -202,7 +266,7 @@ export default function AdminPageEditor() {
             disabled={saving}
             className="px-6 py-2 rounded-lg bg-purple-700 text-white"
           >
-            {saving ? 'Saving...' : 'Save'}
+            {saving ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
