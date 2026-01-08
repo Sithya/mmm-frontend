@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { apiClient } from '../../../lib/api';
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface Page {
   id: number;
@@ -211,15 +212,17 @@ export default function AdminKeynote({
                 <div className="flex gap-2">
                   <button
                     onClick={() => openModal(keynote)}
-                    className="px-4 py-1 bg-blue-600 text-white rounded text-sm"
+                    className="p-1 rounded-full text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition"
+                    aria-label="Edit keynote"
                   >
-                    Edit
+                    <Pencil size={20} />
                   </button>
                   <button
                     onClick={() => handleDelete(keynote.id)}
-                    className="px-4 py-1 bg-red-600 text-white rounded text-sm"
+                    className="p-2 rounded-full text-red-600 hover:bg-red-100 hover:text-red-700 transition"
+                    aria-label="Delete keynote"
                   >
-                    Delete
+                    <Trash2 size={20} />
                   </button>
                 </div>
               </div>
