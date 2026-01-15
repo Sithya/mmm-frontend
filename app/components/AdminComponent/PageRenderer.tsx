@@ -1,6 +1,5 @@
 import Keynotes from "../HybridComponent/KeyNote";
 import NewsCard from "../HybridComponent/NewsCard";
-import ImportantDatesServer from "../HybridComponent/ImportanceDate/ImportantDatesServer";
 
 const API_BASE = process.env.API_INTERNAL_URL;
 
@@ -87,15 +86,8 @@ export default async function PageRenderer({ slug }: { slug: string }) {
               <Keynotes
                 key={section.id}
                 pageId={section.data.page_id}
-                isAdmin={false}
+                isAdmin={true}
               />
-            );
-
-          case 'important-dates':
-            return (
-              <div key={section.id} className="my-6">
-                <ImportantDatesServer />
-              </div>
             );
 
           default:

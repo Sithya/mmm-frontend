@@ -101,49 +101,26 @@ const registerIframeBlot = async () => {
       }
     }
 
+    class DividerBlot extends BlockEmbed {
+      static blotName = "divider";
+      static tagName = "hr";
+    }
+
     Quill.register(IframeBlot as any);
     Quill.register(VideoBlot as any);
     Quill.register(ImageBlot as any);
+    Quill.register(DividerBlot as any);
     iframeRegistered = true;
   } catch (error) {
     console.error("Error registering Quill blots:", error);
   }
 };
 
-const registerFontSizes = async () => {
-  try {
-    // Import Quill - try quill package first, then react-quill-new
-    let Quill: any;
-    try {
-      const QuillModule = await import("quill");
-      Quill = QuillModule.default || QuillModule;
-    } catch {
-      // Fallback to react-quill-new if quill package not available
-      const ReactQuillModule = await import("react-quill-new");
-      Quill =
-        ReactQuillModule.Quill ||
-        ReactQuillModule.default?.Quill ||
-        // ReactQuillModule.default?.reactQuill?.Quill ||
-        ReactQuillModule.default;
-    }
+const registerFontSizes = async () => {};
 
-    if (!Quill || typeof Quill.import !== "function") {
-      console.error("Quill not properly loaded for font sizes");
-      return;
-    }
-
-    const Size = Quill.import("formats/size") as any;
-
-    Size.whitelist = ["12px", "14px", "16px", "18px", "20px", "24px", "32px"];
-
-    Quill.register(Size, true);
-  } catch (error) {
-    console.error("Error registering font sizes:", error);
-  }
-};
 
 // Component //
-export default function TextEditor({
+function TextEditor({
   initialValue = "",
   onChange,
   allowImage = true,
@@ -180,7 +157,7 @@ export default function TextEditor({
     ["bold", "italic", "underline", "strike"],
     [{ color: [] }, { background: [] }],
     [{ script: "sub" }, { script: "super" }],
-    [{ header: "1" }, { header: "2" }, "blockquote", "code-block"],
+    [{ header: "1" }, { header: "2" }, { header: "3"}, { header: "4"}, "blockquote", "code-block"],
     [
       { list: "ordered" },
       { list: "bullet" },
@@ -189,11 +166,12 @@ export default function TextEditor({
     ],
     [{ direction: "rtl" }, { align: [] }],
     ["link", "video"],
+    ["divider"],    
     ["clean"],
   ];
 
-  if (allowImage) toolbarOptions[toolbarOptions.length - 2].push("image");
-  if (allowMap) toolbarOptions[toolbarOptions.length - 2].push({ map: "Map" });
+  if (allowImage) toolbarOptions[toolbarOptions.length - 3].push("image");
+  if (allowMap) toolbarOptions[toolbarOptions.length - 3].push({ map: "Map" });
 
   // Handlers //
   const imageHandler = () => {
@@ -216,6 +194,14 @@ export default function TextEditor({
       reader.readAsDataURL(file);
     };
   };
+
+  // const dividerHandler =() =>{
+  //   divider: function () {
+  //       const range = this.quill.getSelection(true);
+  //       this.quill.insertEmbed(range.index, "divider", true);
+  //       this.quill.setSelection(range.index + 1);
+  //     }
+  // }
 
   // Popup Handler //
   const openPopup = (type: "link" | "video" | "map") => {
@@ -287,6 +273,13 @@ export default function TextEditor({
         link: () => openPopup("link"),
         video: () => openPopup("video"),
         map: () => openPopup("map"),
+        divider: () => {
+          const quill = quillRef.current?.getEditor();
+          if(!quill) return;
+          const range = quill.getSelection(true);
+          quill.insertEmbed(range.index, "divider", true);
+          quill.setSelection(range.index + 1);
+        },
       },
     },
   };
@@ -309,6 +302,7 @@ export default function TextEditor({
     "link",
     "image",
     "video",
+    "divider",
     "color",
     "background",
     "iframe",
@@ -358,7 +352,7 @@ export default function TextEditor({
   return (
     <div
       className="relative w-full max-w-5xl mx-auto"
-      style={{ height: "50vh", borderRadius: "10px" }}
+      style={{ height: "40vh", borderRadius: "10px" }}
     >
       {/* Popup Modal */}
       {popupOpen && (
@@ -376,8 +370,8 @@ export default function TextEditor({
                 popupType === "map"
                   ? "Google Maps embed URL"
                   : popupType === "video"
-                  ? "YouTube/Vimeo video URL"
-                  : "https://example.com"
+                    ? "YouTube/Vimeo video URL"
+                    : "https://example.com"
               }
               className="w-full border rounded-lg px-3 py-2 mb-4 focus:ring focus:ring-purple-300 outline-none"
             />
@@ -416,10 +410,12 @@ export default function TextEditor({
         onChange={handleChange}
         modules={modules}
         formats={formats}
-        placeholder="Compose an epic..."
+        placeholder="write Something..."
         theme="snow"
         style={{ height: "100%" }}
       />
     </div>
   );
 }
+
+export default TextEditor;

@@ -208,10 +208,10 @@ export default function AdminPageEditor() {
                     <p className="font-semibold mb-4">
                       Text Section {index + 1}
                     </p>
-                    <div className="h-[57vh] overflow-y-auto">
+                    <div className="h-auto overflow-y-auto pb-20">
                       <TextEditor
                         initialValue={section.data.html}
-                        onChange={(html) => handleSectionChange(index, html)}
+                        onChange={(html: string) => handleSectionChange(index, html)}
                         allowMap
                         allowImage
                       />
@@ -239,15 +239,18 @@ export default function AdminPageEditor() {
             <div className="flex justify-center gap-4">
               <button
                 onClick={addTextSection}
-                className="mt-4 px-6 py-2 text-purple-950 rounded-lg shadow hover:bg-purple-800 transition border-purple-300 border-2"
+                className="px-6 py-2 my-4
+              font-medium rounded-lg
+              border-2 border-purple-300
+              bg-white text-purple-950
+              transition-all duration-300 ease-out
+              hover:bg-purple-700 hover:text-white
+              hover:-translate-y-3
+              active:translate-y-0
+              disabled:opacity-70
+              disabled:cursor-not-allowed"
               >
                 + Add Text Section
-              </button>
-              <button
-                onClick={addImportantDatesSection}
-                className="mt-4 px-6 py-2 text-purple-950 rounded-lg shadow hover:bg-purple-800 transition border-purple-300 border-2"
-              >
-                + Add Important Dates
               </button>
             </div>
           )}

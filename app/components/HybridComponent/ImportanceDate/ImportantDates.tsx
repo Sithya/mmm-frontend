@@ -169,7 +169,7 @@ export default function ImportantDates({ initialDates }: Props) {
                 key={item.id}
                 onClick={() => setExpandedId(expanded ? null : item.id)}
                 className={`cursor-pointer border rounded-xl overflow-hidden transition-all duration-300 min-h-[70px] ${
-                  expanded ? "shadow-sm bg-purple-50" : "bg-purple-50 hover:bg-purple-100"
+                  expanded ? "bg-white" : " bg-white"
                 }`}
               >
                 <div className="flex items-stretch">

@@ -233,7 +233,16 @@ export default function AdminKeynote({
         <div className="mt-6 flex justify-center">
           <button
             onClick={() => openModal()}
-            className="px-4 py-2 bg-purple-900 hover:bg-purple-800 text-white rounded-lg"
+            className="px-6 py-2 my-4
+              font-medium rounded-lg
+              border-2 border-purple-300
+              bg-white text-purple-950
+              transition-all duration-300 ease-out
+              hover:bg-purple-700 hover:text-white
+              hover:-translate-y-3
+              active:translate-y-0
+              disabled:opacity-70
+              disabled:cursor-not-allowed"
           >
             + Add Keynote
           </button>

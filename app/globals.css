@@ -21,64 +21,59 @@
   }
 
   /* Map toolbar button */
-.ql-toolbar .ql-map {
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
+  .ql-toolbar .ql-map {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
 
-  padding: 0 10px !important;
-  min-width: 44px;
-  height: 32px;
+    padding: 0 10px !important;
+    min-width: 44px;
+    height: 32px;
 
-  font-size: 13px;
-  font-weight: 500;
-  color: #444;
+    font-size: 13px;
+    font-weight: 500;
+    color: #444;
 
-  background: white;
-  border: 1px solid #c0d8ff !important;
-  border-radius: 6px !important;
-  transition: all 0.15s ease-in-out;
-}
+    background: white;
+    border: 1px solid #c0d8ff !important;
+    border-radius: 6px !important;
+    transition: all 0.15s ease-in-out;
+  }
 
-/* FORCE text label */
-.ql-toolbar .ql-map::before {
-  content: "Map" !important;
-  font-family: inherit;
-}
+  /* FORCE text label */
+  .ql-toolbar .ql-map::before {
+    content: "Map" !important;
+    font-family: inherit;
+  }
 
-/* Hover */
-.ql-toolbar .ql-map:hover {
-  background: #e8f0ff !important;
-  border-color: #a5c8ff !important;
-}
+  /* Hover */
+  .ql-toolbar .ql-map:hover {
+    background: #e8f0ff !important;
+    border-color: #a5c8ff !important;
+  }
 
-/* Active */
-.ql-toolbar .ql-map:active {
-  background: #e8f0ff !important;
-}
+  /* Active */
+  .ql-toolbar .ql-map:active {
+    background: #e8f0ff !important;
+  }
 
-/* Focus */
-.ql-toolbar .ql-map:focus {
-  outline: 2px solid #c0d8ff !important;
-  outline-offset: 1px;
-}
+  /* Focus */
+  .ql-toolbar .ql-map:focus {
+    outline: 2px solid #c0d8ff !important;
+    outline-offset: 1px;
+  }
 
-.ql-container {
-  font-size: 16px;
-}
+  .ql-container {
+    font-size: 16px;
+  }
 
-.ql-editor {
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 24px;
-  line-height: 1.75;
-}
+  .ql-editor {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 24px;
+    line-height: 1.75;
+  }
 
-
-
-  /* .ql-editor {
-    line-height: 1.6;
-  } */
 
   .ql-editor img {
     display: inline-block;
@@ -92,30 +87,57 @@
     margin: 12px 0;
   }
 
-/* 
-  .ql-size-12px { font-size: 12px; }
-.ql-size-14px { font-size: 14px; }
-.ql-size-16px { font-size: 16px; }
-.ql-size-18px { font-size: 18px; }
-.ql-size-20px { font-size: 20px; }
-.ql-size-24px { font-size: 24px; }
-.ql-size-32px { font-size: 32px; }
+  /* Divider (HR) toolbar button */
+  .ql-toolbar .ql-divider {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
 
-.ql-editor {
-  font-size: 16px;
-}
+    padding: 0 10px !important;
+    min-width: 44px;
+    height: 32px;
+    margin-left: -8px;
 
-.ql-picker.ql-size .ql-picker-item[data-value="12px"]::before {
-  content: "12";
-}
-.ql-picker.ql-size .ql-picker-item[data-value="14px"]::before {
-  content: "14";
-}
-.ql-picker.ql-size .ql-picker-item[data-value="16px"]::before {
-  content: "16";
-}
-.ql-picker.ql-size .ql-picker-item[data-value="18px"]::before {
-  content: "18";
-} */
+    font-size: 13px;
+    font-weight: 500;
+    color: #444;
+
+    background: white;
+    border: 1px solid #c0d8ff !important;
+    border-radius: 6px !important;
+    transition: all 0.15s ease-in-out;
+  }
+
+  /* FORCE text label */
+  .ql-toolbar .ql-divider::before {
+    content: "Line" !important;
+    font-family: inherit;
+  }
+
+  /* Hover */
+  .ql-toolbar .ql-divider:hover {
+    background: #e8f0ff !important;
+    border-color: #a5c8ff !important;
+  }
+
+  /* Active */
+  .ql-toolbar .ql-divider:active {
+    background: #e8f0ff !important;
+  }
+
+  /* Focus */
+  .ql-toolbar .ql-divider:focus {
+    outline: 2px solid #c0d8ff !important;
+    outline-offset: 1px;
+  }
+
+  .ql-editor hr {
+    border: none;
+    border-top: 1px solid #d4d4d4;
+    margin: 16px 0;
+  }
+
+
+
 
 }
