@@ -31,7 +31,7 @@ const registerIframeBlot = async () => {
       Quill =
         ReactQuillModule.Quill ||
         ReactQuillModule.default?.Quill ||
-        ReactQuillModule.default?.reactQuill?.Quill ||
+        // ReactQuillModule.default?.reactQuill?.Quill ||
         ReactQuillModule.default;
     }
 
@@ -123,7 +123,7 @@ const registerFontSizes = async () => {
       Quill =
         ReactQuillModule.Quill ||
         ReactQuillModule.default?.Quill ||
-        ReactQuillModule.default?.reactQuill?.Quill ||
+        // ReactQuillModule.default?.reactQuill?.Quill ||
         ReactQuillModule.default;
     }
 
