@@ -36,14 +36,12 @@ export default function NewsCard({ pageId }: Props) {
 
   useEffect(() => {
     const fetchNews = async () => {
-      if (!pageId) return; // do nothing if no pageId
+      if (!pageId) return;
 
       try {
-        // Fetch all news for the page, no limit
         const res = await fetch(`${API_URL}`);
         if (!res.ok) throw new Error("Failed to fetch news");
         const response = await res.json();
-        // Handle both old format (array) and new format ({success, data, message})
         const data = Array.isArray(response) ? response : response.data || [];
         setNewsData(data);
       } catch (err) {
@@ -54,21 +52,18 @@ export default function NewsCard({ pageId }: Props) {
     fetchNews();
   }, [pageId]);
 
-  /* CREATE / UPDATE */
   const handleSave = async () => {
     if (!newNews.title) return;
 
     try {
       let res: Response;
       if (editNews) {
-        // UPDATE
         res = await fetch(`${API_URL}/${editNews.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newNews),
         });
       } else {
-        // CREATE
         res = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -80,15 +75,10 @@ export default function NewsCard({ pageId }: Props) {
         });
       }
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Save failed:", errorText);
-        return;
-      }
+      if (!res.ok) return;
 
       const text = await res.text();
       const json = text ? JSON.parse(text) : null;
-      // Extract data from ApiResponse format if present
       const itemData = json?.data || json;
 
       if (editNews && itemData) {
@@ -115,22 +105,16 @@ export default function NewsCard({ pageId }: Props) {
     }
   };
 
-  /* DELETE */
   const handleDelete = async (id: number) => {
     try {
       const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Delete failed:", errorText);
-        return;
-      }
+      if (!res.ok) return;
       setNewsData((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
       console.error(err);
     }
   };
 
-  /* Open Edit Modal */
   const openEditModal = (item: NewsItem) => {
     setEditNews(item);
     setNewNews({
@@ -143,10 +127,9 @@ export default function NewsCard({ pageId }: Props) {
     setShowCreate(true);
   };
 
-  /* UI */
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-4 w-full max-w-full">
         {newsData.map((item) => {
           const parts = item.link_text
             ? item.content?.split(item.link_text) || [item.content]
@@ -155,83 +138,85 @@ export default function NewsCard({ pageId }: Props) {
           return (
             <div
               key={item.id}
-              className="relative w-[1024px] bg-white rounded-xl shadow-md p-4 border text-left ml-6 "
+              className="relative w-full max-w-6xl mx-auto bg-white rounded-xl shadow-md p-4 border text-left -ml-[1px]"
             >
               <div className="absolute top-0 left-0 h-full w-2 bg-gradient-to-b from-purple-700 to-purple-400 rounded-l-xl"></div>
 
-              <div className="flex-1 pl-3">
-                {item.published_at && (
-                  <p className="text-gray-500 text-sm mb-1 font-semibold">
-                    {new Date(item.published_at).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </p>
-                )}
+              <div className="flex flex-col md:flex-row md:items-start pl-3">
+                <div className="flex-1">
+                  {item.published_at && (
+                    <p className="text-gray-500 text-sm mb-1 font-semibold">
+                      {new Date(item.published_at).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </p>
+                  )}
 
-                <h2 className="font-semibold text-lg text-gray-900 mb-1">
-                  {item.title}
-                </h2>
+                  <h2 className="font-semibold text-lg text-gray-900 mb-1">
+                    {item.title}
+                  </h2>
 
-                {/* Check if content contains HTML tags - prioritize HTML rendering */}
-                {item.content && /<[a-z][\s\S]*>/i.test(item.content) ? (
-                  <div
-                    className="text-gray-700"
-                    dangerouslySetInnerHTML={{ __html: item.content || "" }}
-                  />
-                ) : item.link_text ? (
-                  <p className="text-gray-700">
-                    {parts[0]}
-                    <Link
-                      href={item.link_url!}
-                      className="text-purple-700 underline hover:text-purple-800 font-medium"
+                  {item.content && /<[a-z][\s\S]*>/i.test(item.content) ? (
+                    <div
+                      className="text-gray-700"
+                      dangerouslySetInnerHTML={{ __html: item.content || "" }}
+                    />
+                  ) : item.link_text ? (
+                    <p className="text-gray-700">
+                      {parts[0]}
+                      <Link
+                        href={item.link_url!}
+                        className="text-purple-700 underline hover:text-purple-800 font-medium"
+                      >
+                        {item.link_text}
+                      </Link>
+                      {parts[1]}
+                    </p>
+                  ) : (
+                    <p className="text-gray-700">{item.content}</p>
+                  )}
+                </div>
+
+                {isAdmin && (
+                  <div className="flex mt-3 md:mt-0 md:ml-4 gap-2 md:flex-col">
+                    <button
+                      onClick={() => openEditModal(item)}
+                      className="p-2 rounded-full text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition"
+                      aria-label="Edit news"
                     >
-                      {item.link_text}
-                    </Link>
-                    {parts[1]}
-                  </p>
-                ) : (
-                  <p className="text-gray-700">{item.content}</p>
+                      <Pencil size={20} />
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="p-2 rounded-full text-red-600 hover:bg-red-100 hover:text-red-700 transition"
+                      aria-label="Delete news"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
                 )}
               </div>
-
-              {isAdmin && (
-                <div className="absolute top-3 right-3 flex">
-                  <button
-                    onClick={() => openEditModal(item)}
-                    className="p-1 rounded-full text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition"
-                    aria-label="Edit news"
-                  >
-                    <Pencil size={20} />
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    className="p-2 rounded-full text-red-600 hover:bg-red-100 hover:text-red-700 transition"
-                    aria-label="Delete news"
-                  >
-                    <Trash2 size={20} />
-                  </button>
-                </div>
-              )}
             </div>
           );
         })}
       </div>
 
       {isAdmin && (
-        <div className="flex justify-center mt-6">
+        <div className="flex justify-center mt-6 px-4">
           <button
             onClick={() => setShowCreate(true)}
             className="
-              px-6 py-2 my-4
+              px-6 py-2 mt-4
+              w-full sm:w-auto
               font-medium rounded-lg
               border-2 border-purple-300
               bg-white text-purple-950
               transition-all duration-300 ease-out
               hover:bg-purple-700 hover:text-white
-              hover:-translate-y-3
+              hover:-translate-y-1
               active:translate-y-0
               disabled:opacity-70
               disabled:cursor-not-allowed
@@ -240,12 +225,13 @@ export default function NewsCard({ pageId }: Props) {
             + Create News
           </button>
         </div>
+
       )}
 
       {/* Create / Edit Modal */}
       {showCreate && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl animate-slideUp">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl animate-slideUp">
             <h2 className="text-xl font-semibold text-[#2A0845] mb-4">
               {editNews ? "Edit News" : "Create News"}
             </h2>

@@ -6,7 +6,7 @@ import TextEditor from "@/app/components/AdminComponent/TextEditor";
 
 interface PageSection {
   id: string;
-  type: "text" | "news" | "keynotes" | "important-dates";
+  type: "text" | "news" | "keynotes";
   data: any;
 }
 
@@ -18,14 +18,11 @@ interface Page {
   json: { sections: PageSection[] };
 }
 
-// Build API base robustly: prefer NEXT_PUBLIC_API_BASE_URL, fall back to localhost.
 let API_URL_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
   "http://localhost:8000/api/v1";
 
-// If running in the browser and the base uses a Docker internal host, rewrite it
-// so the browser can reach the backend during local development.
 if (typeof window !== "undefined") {
   try {
     const parsed = new URL(API_URL_BASE);
@@ -34,9 +31,7 @@ if (typeof window !== "undefined") {
       parsed.port = "8000";
       API_URL_BASE = parsed.toString().replace(/\/$/, "");
     }
-  } catch (e) {
-    // ignore malformed env value and keep fallback
-  }
+  } catch (e) {}
 }
 
 const API_URL = `${API_URL_BASE.replace(/\/$/, "")}/pages`;
@@ -58,16 +53,11 @@ export default function AdminPageEditor() {
         const res = await fetch(`${API_URL}/slug/${slug}`, {
           cache: "no-store",
         });
-        if (!res.ok) {
-          const errorText = await res.text();
-          console.error("Failed to fetch page:", errorText);
-          throw new Error("Failed to fetch page");
-        }
+        if (!res.ok) throw new Error("Failed to fetch page");
+
         const response = await res.json();
-        // Handle both old format (direct page object) and new format ({success, data, message})
         const pageData: Page = response.data || response;
 
-        // initialize sections if empty
         if (!pageData.json?.sections || pageData.json.sections.length === 0) {
           pageData.json = {
             sections: [{ id: `text-1`, type: "text", data: { html: "" } }],
@@ -105,19 +95,6 @@ export default function AdminPageEditor() {
     });
   };
 
-  const addImportantDatesSection = () => {
-    if (!page) return;
-    const newSection: PageSection = {
-      id: `important-dates-${Date.now()}`,
-      type: "important-dates",
-      data: {},
-    };
-    setPage({
-      ...page,
-      json: { sections: [...page.json.sections, newSection] },
-    });
-  };
-
   const handleSubmit = async () => {
     if (!page) return;
     setSaving(true);
@@ -137,15 +114,7 @@ export default function AdminPageEditor() {
         }),
       });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Save failed:", errorText);
-        throw new Error("Failed to save");
-      }
-
-      // Handle response format (could be wrapped in {success, data, message})
-      const response = await res.json();
-      const savedPage = response.data || response;
+      if (!res.ok) throw new Error("Failed to save");
 
       router.push(`/${slug}`);
     } catch (err) {
@@ -193,36 +162,18 @@ export default function AdminPageEditor() {
           {page.json.sections.map((section, index) => (
             <div key={section.id} className="w-full">
               {activeTab === "edit" ? (
-                section.type === "important-dates" ? (
-                  <div className="border border-purple-200 rounded-xl p-4 mb-6">
-                    <p className="font-semibold mb-4">
-                      Important Dates Section
-                    </p>
-                    <p className="text-gray-600 text-sm">
-                      This section will display all important dates. No
-                      configuration needed.
-                    </p>
+                <div className="border border-purple-200 rounded-xl p-4 mb-6">
+                  <p className="font-semibold mb-4">Text Section {index + 1}</p>
+                  <div className="h-auto overflow-y-auto pb-20">
+                    <TextEditor
+                      initialValue={section.data.html}
+                      onChange={(html: string) =>
+                        handleSectionChange(index, html)
+                      }
+                      allowMap
+                      allowImage
+                    />
                   </div>
-                ) : (
-                  <div className="border border-purple-200 rounded-xl p-4 mb-6">
-                    <p className="font-semibold mb-4">
-                      Text Section {index + 1}
-                    </p>
-                    <div className="h-auto overflow-y-auto pb-20">
-                      <TextEditor
-                        initialValue={section.data.html}
-                        onChange={(html: string) => handleSectionChange(index, html)}
-                        allowMap
-                        allowImage
-                      />
-                    </div>
-                  </div>
-                )
-              ) : section.type === "important-dates" ? (
-                <div className="my-6 bg-gray-50 border border-purple-200 rounded-xl p-6">
-                  <p className="text-gray-600 italic">
-                    Important Dates will be displayed here
-                  </p>
                 </div>
               ) : (
                 <div className="ql-snow max-w-5xl my-6 bg-gray-50 border border-purple-200 rounded-xl p-6">
@@ -239,16 +190,19 @@ export default function AdminPageEditor() {
             <div className="flex justify-center gap-4">
               <button
                 onClick={addTextSection}
-                className="px-6 py-2 my-4
-              font-medium rounded-lg
-              border-2 border-purple-300
-              bg-white text-purple-950
-              transition-all duration-300 ease-out
-              hover:bg-purple-700 hover:text-white
-              hover:-translate-y-3
-              active:translate-y-0
-              disabled:opacity-70
-              disabled:cursor-not-allowed"
+                className="
+                  px-6 py-2 my-4
+                  w-full sm:w-auto
+                  font-medium rounded-lg
+                  border-2 border-purple-300
+                  bg-white text-purple-950
+                  transition-all duration-300 ease-out
+                  hover:bg-purple-700 hover:text-white
+                  hover:-translate-y-1
+                  active:translate-y-0
+                  disabled:opacity-70
+                  disabled:cursor-not-allowed
+                "
               >
                 + Add Text Section
               </button>
@@ -256,10 +210,10 @@ export default function AdminPageEditor() {
           )}
         </div>
 
-        <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-purple-200">
+        <div className="flex flex-col sm:flex-row justify-end gap-4 mt-6 pt-4 border-t border-purple-200">
           <button
             onClick={() => router.back()}
-            className="px-6 py-2 rounded-lg bg-gray-200"
+            className="px-6 py-2 rounded-lg bg-gray-200 w-full sm:w-auto"
           >
             Cancel
           </button>
@@ -267,7 +221,7 @@ export default function AdminPageEditor() {
           <button
             onClick={handleSubmit}
             disabled={saving}
-            className="px-6 py-2 rounded-lg bg-purple-700 text-white"
+            className="px-6 py-2 rounded-lg bg-purple-700 text-white w-full sm:w-auto"
           >
             {saving ? "Saving..." : "Save"}
           </button>
