@@ -3,13 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import TextEditor from "@/app/components/AdminComponent/TextEditor";
-// import { useAuth } from "@/context/AuthContext";
-
+import { useAuth } from "@/app/components/AuthProvider";
 
 interface PageSection {
   id: string;
-  // include 'important-dates' for sections added by the admin editor
-  type: "text" | "news" | "keynotes" | "important-dates";
+  type: "text" | "news" | "keynotes";
   data: any;
 }
 
@@ -20,8 +18,6 @@ interface Page {
   component: string;
   json: { sections: PageSection[] };
 }
-
-
 
 let API_URL_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -42,9 +38,8 @@ if (typeof window !== "undefined") {
 const API_URL = `${API_URL_BASE.replace(/\/$/, "")}/pages`;
 
 export default function AdminPageEditor() {
-
-  // const { user, token } = useAuth();
-  // const isAdmin = user?.is_admin === true;
+  const { user } = useAuth();
+  const isAdmin = user?.is_admin === true;
 
   const router = useRouter();
   const { slug } = useParams<{ slug: string }>();
@@ -54,14 +49,10 @@ export default function AdminPageEditor() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-//   useEffect(() => {
-//   if (user === null) return; // auth still loading (optional)
-  
-//   if (!isAdmin) {
-//     router.replace("/");
-//   }
-// }, [user, isAdmin, router]);
-
+  useEffect(() => {
+    if (user === null) return;
+    if (!isAdmin) router.replace("/");
+  }, [user, isAdmin, router]);
 
   useEffect(() => {
     if (!slug) return;
@@ -78,7 +69,7 @@ export default function AdminPageEditor() {
 
         if (!pageData.json?.sections || pageData.json.sections.length === 0) {
           pageData.json = {
-            sections: [{ id: `text-1`, type: "text", data: { html: "" } }],
+            sections: [{ id: "text-1", type: "text", data: { html: "" } }],
           };
         }
 
@@ -96,7 +87,10 @@ export default function AdminPageEditor() {
   const handleSectionChange = (index: number, html: string) => {
     if (!page) return;
     const updatedSections = [...page.json.sections];
-    updatedSections[index] = { ...updatedSections[index], data: { html } };
+    updatedSections[index] = {
+      ...updatedSections[index],
+      data: { html },
+    };
     setPage({ ...page, json: { sections: updatedSections } });
   };
 
@@ -106,19 +100,6 @@ export default function AdminPageEditor() {
       id: `text-${page.json.sections.length + 1}`,
       type: "text",
       data: { html: "" },
-    };
-    setPage({
-      ...page,
-      json: { sections: [...page.json.sections, newSection] },
-    });
-  };
-
-  const addImportantDatesSection = () => {
-    if (!page) return;
-    const newSection: PageSection = {
-      id: `important-dates-${Date.now()}`,
-      type: "important-dates",
-      data: {},
     };
     setPage({
       ...page,
@@ -136,8 +117,8 @@ export default function AdminPageEditor() {
 
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json", 
-          // Authorization: `Bearer ${token}`, 
+        headers: {
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           slug: page.slug,
@@ -160,33 +141,33 @@ export default function AdminPageEditor() {
 
   if (loading) return <p className="p-6 text-center">Loading...</p>;
   if (!page) return <p className="p-6 text-center">Page not found</p>;
-  //   if (!isAdmin) {
-  //   return <p className="p-6 text-center">Access denied</p>;
-  // }
-
 
   return (
     <div className="max-h-screen bg-gray-50 p-6 mt-20">
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg p-8 flex flex-col h-[87vh]">
-        <h1 className="text-3xl font-bold text-purple-900 mb-4">Edit {slug}</h1>
+        <h1 className="text-3xl font-bold text-purple-900 mb-4">
+          Edit {slug}
+        </h1>
 
         {/* Tabs */}
         <div className="flex border-b border-purple-300 mb-4">
           <button
             onClick={() => setActiveTab("edit")}
-            className={`px-4 py-2 font-semibold text-lg ${activeTab === "edit"
+            className={`px-4 py-2 font-semibold text-lg ${
+              activeTab === "edit"
                 ? "border-b-4 border-purple-700 text-purple-900"
                 : "border-b-4 border-transparent text-purple-700"
-              }`}
+            }`}
           >
             Edit
           </button>
           <button
             onClick={() => setActiveTab("preview")}
-            className={`ml-4 px-4 py-2 font-semibold text-lg ${activeTab === "preview"
+            className={`ml-4 px-4 py-2 font-semibold text-lg ${
+              activeTab === "preview"
                 ? "border-b-4 border-purple-700 text-purple-900"
                 : "border-b-4 border-transparent text-purple-700"
-              }`}
+            }`}
           >
             Preview
           </button>
@@ -195,26 +176,28 @@ export default function AdminPageEditor() {
         {/* Editor / Preview */}
         <div className="flex-1 overflow-y-auto pr-2 space-y-6">
           {page.json.sections.map((section, index) => (
-            <div key={section.id} className="w-full">
+            <div key={section.id}>
               {activeTab === "edit" ? (
                 <div className="border border-purple-200 rounded-xl p-4 mb-6">
-                  <p className="font-semibold mb-4">Text Section {index + 1}</p>
-                  <div className="h-auto overflow-y-auto pb-20">
-                    <TextEditor
-                      initialValue={section.data.html}
-                      onChange={(html: string) =>
-                        handleSectionChange(index, html)
-                      }
-                      allowMap
-                      allowImage
-                    />
-                  </div>
+                  <p className="font-semibold mb-4">
+                    Text Section {index + 1}
+                  </p>
+                  <TextEditor
+                    initialValue={section.data.html}
+                    onChange={(html) =>
+                      handleSectionChange(index, html)
+                    }
+                    allowMap
+                    allowImage
+                  />
                 </div>
               ) : (
-                <div className="ql-snow max-w-5xl my-6 bg-gray-50 border border-purple-200 rounded-xl p-6">
+                <div className="ql-snow bg-gray-50 border border-purple-200 rounded-xl p-6">
                   <div
                     className="ql-editor"
-                    dangerouslySetInnerHTML={{ __html: section.data.html }}
+                    dangerouslySetInnerHTML={{
+                      __html: section.data.html,
+                    }}
                   />
                 </div>
               )}
@@ -222,41 +205,26 @@ export default function AdminPageEditor() {
           ))}
 
           {activeTab === "edit" && (
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={addTextSection}
-                className="
-                  px-6 py-2 my-4
-                  w-full sm:w-auto
-                  font-medium rounded-lg
-                  border-2 border-purple-300
-                  bg-white text-purple-950
-                  transition-all duration-300 ease-out
-                  hover:bg-purple-700 hover:text-white
-                  hover:-translate-y-1
-                  active:translate-y-0
-                  disabled:opacity-70
-                  disabled:cursor-not-allowed
-                "
-              >
-                + Add Text Section
-              </button>
-            </div>
+            <button
+              onClick={addTextSection}
+              className="w-full px-6 py-2 my-4 font-medium rounded-lg border-2 border-purple-300 bg-white text-purple-950 hover:bg-purple-700 hover:text-white"
+            >
+              + Add Text Section
+            </button>
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-end gap-4 mt-6 pt-4 border-t border-purple-200">
+        <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-purple-200">
           <button
             onClick={() => router.back()}
-            className="px-6 py-2 rounded-lg bg-gray-200 w-full sm:w-auto"
+            className="px-6 py-2 rounded-lg bg-gray-200"
           >
             Cancel
           </button>
-
           <button
             onClick={handleSubmit}
             disabled={saving}
-            className="px-6 py-2 rounded-lg bg-purple-700 text-white w-full sm:w-auto"
+            className="px-6 py-2 rounded-lg bg-purple-700 text-white"
           >
             {saving ? "Saving..." : "Save"}
           </button>
@@ -265,3 +233,4 @@ export default function AdminPageEditor() {
     </div>
   );
 }
+  

@@ -51,7 +51,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto flex items-center justify-between p-2">
         {/* LOGO */}
         <Link href="/home">
-          <Image src="/images/logo.png" width={120} height={60} alt="Logo" />
+          <Image src="/images/logo.jpg" width={120} height={60} alt="Logo" />
         </Link>
 
         {/* HAMBURGER ICON - MOBILE */}

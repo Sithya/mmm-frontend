@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Pencil, Trash2 } from "lucide-react";
-// import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "../AuthProvider";
+
 
 
 interface NewsItem {
@@ -24,8 +25,8 @@ const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/news`;
 
 export default function NewsCard({ pageId }: Props) {
   
-  // const { user } = useAuth();
-  // const isAdmin = user?.is_admin === true;
+  const { user } = useAuth();
+  const isAdmin = user?.is_admin === true;
 
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [showCreate, setShowCreate] = useState(false);
@@ -38,7 +39,6 @@ export default function NewsCard({ pageId }: Props) {
     link_url: "",
   });
 
-  const isAdmin = true;
 
   useEffect(() => {
     const fetchNews = async () => {

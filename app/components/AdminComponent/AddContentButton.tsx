@@ -2,17 +2,18 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
-// import { useAuth } from '@/context/AuthContext';
+import { useAuth } from "../AuthProvider";
+
 
 export default function EditPageButton() {
-  // const { user } = useAuth();
-  // const isAdmin = user?.is_admin === true;
+  const { user } = useAuth();
+  const isAdmin = user?.is_admin === true;
 
   const pathname = usePathname();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  // if (!isAdmin) return null;
+  if (!isAdmin) return null;
 
   const slug = pathname.slice(1).replace(/\//g, '-') || 'home';
 

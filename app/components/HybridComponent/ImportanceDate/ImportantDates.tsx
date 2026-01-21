@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Pencil, Trash2 } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css"; 
-// import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "../../AuthProvider";
+
 
 interface DateItem {
   id: number;
@@ -21,8 +22,8 @@ const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/important-dates`;
 
 export default function ImportantDates({ initialDates }: Props) {
 
-  // const { user } = useAuth();
-  // const isAdmin = user?.is_admin === true;
+  const { user } = useAuth();
+  const isAdmin = user?.is_admin === true;
 
   const [dates, setDates] = useState<DateItem[]>(initialDates);
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -37,7 +38,6 @@ export default function ImportantDates({ initialDates }: Props) {
   const [dateError, setDateError] = useState("");
   const [titleError, setTitleError] = useState("");
 
-  const isAdmin = true;
 
   const formatDateDisplay = (dateStr: string) => {
     const date = new Date(dateStr);
