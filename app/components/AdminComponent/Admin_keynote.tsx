@@ -13,13 +13,15 @@ interface Page {
 
 interface Keynote {
   id: number;
-  page_id: number | null;
+  page_id: number ;
   name: string;
   photo_url: string | null;
   affiliation: string;
   title: string;
-  bio: string;
+  bio: string | null;
   content: string;
+  bio_html: string| null;
+  content_html: string| null;
   created_at: string;
   updated_at: string;
   date?: string;
@@ -100,12 +102,12 @@ export default function AdminKeynote({
     if (keynote) {
       setEditingId(keynote.id);
       setForm({
-        name: keynote.name,
-        title: keynote.title,
+        name: keynote.name ?? '',
+        title: keynote.title ?? '',
         photo_url: keynote.photo_url ?? '',
-        affiliation: keynote.affiliation,
-        bio: keynote.bio,
-        content: keynote.content,
+        affiliation: keynote.affiliation ?? '',
+        bio: keynote.bio ?? '',
+        content: keynote.content ?? '',
         date: keynote.date ?? '',
         time: keynote.time ?? '',
       });
@@ -131,13 +133,39 @@ export default function AdminKeynote({
   const handleSave = async () => {
     if (!form.name.trim()) return;
 
-    const payload = {
-      page_id: currentPageId,
-      ...form,
+    // ensure we have a page id
+    if (!currentPageId) {
+      console.error('Cannot save keynote: missing page_id');
+      return;
+    }
+
+    // normalize payload: convert empty strings to nulls and map frontend fields
+    const normalizePayload = (f: typeof form, pageId: number) => {
+      const p: any = {
+        page_id: pageId,
+        name: f.name?.trim() || null,
+        title: f.title?.trim() || null,
+        photo_url: f.photo_url?.trim() || null,
+        affiliation: f.affiliation?.trim() || null,
+        // backend expects HTML fields for rich text; map plain values to *_html
+        bio_html: f.bio?.trim() || null,
+        content_html: f.content?.trim() || null,
+        date: f.date || null,
+        time: f.time || null,
+      };
+
+      // remove undefined keys (keep explicit nulls)
+      Object.keys(p).forEach((k) => {
+        if (p[k] === undefined) delete p[k];
+      });
+
+      return p;
     };
 
+    const payload = normalizePayload(form, currentPageId as number);
+
     try {
-      if (editingId) {
+      if (editingId !== null) {
         await apiClient.put(`/keynotes/${editingId}`, payload);
       } else {
         await apiClient.post('/keynotes', payload);
@@ -153,24 +181,12 @@ export default function AdminKeynote({
   /* ---------------------------------- DELETE --------------------------------- */
 
   const handleDelete = async (id: number) => {
-    // try {
-    //   await apiClient.delete(`/keynotes/${id}`);
-    //   fetchData();
-    // } catch (err) {
-    //   console.error(err);
-    // }
-
     try {
-      // const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-      const res = await fetch(`http://localhost:8000/api/v1/keynotes/${id}`, { method: 'DELETE' });
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Delete failed:", errorText);
-        return;
-      }
-      setKeynotes((prev) => prev.filter((item) => item.id !== id));
+      await apiClient.delete(`/keynotes/${id}`);
+      // refresh list from server to keep in sync
+      fetchData();
     } catch (err) {
-      console.error(err);
+      console.error('Delete failed', err);
     }
   };
 

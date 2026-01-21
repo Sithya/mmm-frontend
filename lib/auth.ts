@@ -11,9 +11,9 @@ export async function getCurrentUser() {
     return apiClient.get<CurrentUser>("/auth/me");
 }
 
-// export async function logout() {
-//     try {
-//         await apiClient.post("/auth/logout");
-//     } catch { }
-//     apiClient.setAuthToken(undefined);
-// }
+export async function logout() {
+    try {
+        await apiClient.post("/auth/logout");
+    } catch { }
+    apiClient.setAuthToken(undefined);
+}

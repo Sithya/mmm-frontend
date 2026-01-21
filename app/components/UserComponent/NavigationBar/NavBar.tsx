@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../../AuthProvider";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import LogoutButton from "./LogoutButton";
 
 interface DropdownSection {
   title: string;
@@ -20,6 +23,8 @@ export default function Navbar() {
   const pathname = usePathname();
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
+  const { user, signOut, isAdmin } = useAuth();
 
   const menuItems: MenuItem[] = [
     { title: "Home", href: "/home" },
@@ -30,6 +35,16 @@ export default function Navbar() {
     { title: "Organization", href: "/organization" },
     { title: "Register", href: "/register" },
   ];
+
+  const ADMIN_PREFIX = "/f96ca35d-445d-43e3-bf95-a542922b3db4";
+
+  async function handleSignOut() {
+    try {
+      await signOut();
+    } finally {
+      router.push("/home");
+    }
+  }
 
   return (
     <nav className="w-full shadow-sm fixed top-0 left-0 z-50 bg-white">
@@ -105,6 +120,12 @@ export default function Navbar() {
               </div>
             );
           })}
+
+          {isAdmin && (
+            <div className="flex items-center">
+              <LogoutButton className="ml-4" />
+            </div>
+          )}
         </div>
       </div>
 
@@ -148,6 +169,11 @@ export default function Navbar() {
                 </div>
               );
             })}
+            {isAdmin && (
+              <div className="px-4 py-2">
+                <LogoutButton />
+              </div>
+            )}
           </div>
         </div>
       )}

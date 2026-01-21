@@ -1,15 +1,17 @@
+"use client";
+import React from 'react';
 import AdminKeynote from "../AdminComponent/Admin_keynote";
 import UserKeyNotes from "../UserComponent/User_Keynotes";
+import { useAuth } from "../AuthProvider";
 
 type Props = {
   pageId: number;
-  isAdmin: boolean;
 };
 
-export default function Keynotes({ pageId, isAdmin }: Props) {
-  if (isAdmin) {
-    return <AdminKeynote pageId={pageId} />;
-  }
+export default function Keynotes({ pageId }: Props) {
+  const { isAdmin, loading } = useAuth();
 
-  return <UserKeyNotes pageId={pageId} />;
+  if (loading) return <div className="py-6">Loading keynotes…</div>;
+
+  return isAdmin ? <AdminKeynote pageId={pageId} /> : <UserKeyNotes pageId={pageId} />;
 }

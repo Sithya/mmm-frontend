@@ -3,16 +3,24 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "../../../lib/api";
+import { useAuth } from "../AuthProvider";
 
 export default function AdminLogin() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const { refresh, signIn } = useAuth();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    // Basic client-side validation to avoid unnecessary server validation errors
+    if (!email || !password) {
+      setError("Please enter email and password.");
+      return;
+    }
+   
 
     (async () => {
       const res = await apiClient.post<{ user: { is_admin: boolean }, token: string }>("/auth/login", {
@@ -20,8 +28,23 @@ export default function AdminLogin() {
         password,
       });
 
+      // Log the full response for debugging 422 cases (developer only)
+      // eslint-disable-next-line no-console
+      console.debug("Login response:", res);
+
       if (res.errors) {
-        const msg = Object.values(res.errors).flat().join("\n");
+        // Backend may return validation errors in different shapes; normalize for display
+        let msg = "Login failed";
+        try {
+          if (res.errors?.message) msg = String(res.errors.message);
+          else {
+            const vals = Object.values(res.errors).flat();
+            msg = vals.join("\n");
+          }
+        } catch (e) {
+          // fallback
+          msg = "Login failed";
+        }
         setError(msg || "Login failed");
         return;
       }
@@ -33,15 +56,17 @@ export default function AdminLogin() {
         return;
       }
 
-      apiClient.setAuthToken(token);
-
-      // Route based on role
-      // As requested: after login, admins go to home page
-      if (isAdmin) {
-        router.push("/");
-      } else {
-        router.push("/");
+      // Use signIn to set token and optionally set user directly (faster)
+      try {
+        await signIn(token, res.data?.user ?? null);
+      } catch (e) {
+        // fallback to setting token and refreshing
+        apiClient.setAuthToken(token);
+        try { await refresh(); } catch {}
       }
+
+      // Redirect after login: return to home but keep token so admin state persists
+      router.push("/");
     })();
   };
 

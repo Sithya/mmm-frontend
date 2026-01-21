@@ -59,6 +59,8 @@ export default async function PageRenderer({ slug }: { slug: string }) {
     }
   });
 
+  // Decision about admin rendering happens client-side (token stored in localStorage)
+
   return (
     <>
       {resultSections.map((section: any) => {
@@ -87,7 +89,7 @@ export default async function PageRenderer({ slug }: { slug: string }) {
               <Keynotes
                 key={section.id}
                 pageId={section.data.page_id}
-                isAdmin={true}
+                      // isAdmin={isAdmin}    // dynamically set
               />
             );
 
