@@ -1,17 +1,48 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { apiClient } from "../../../lib/api";
 
 export default function AdminLogin() {
-  const [username, setUsername] = useState("");
+  const router = useRouter();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
-    console.log("Username:", username);
-    console.log("Password:", password);
-    alert("Login submitted!");
+    (async () => {
+      const res = await apiClient.post<{ user: { is_admin: boolean }, token: string }>("/auth/login", {
+        email,
+        password,
+      });
+
+      if (res.errors) {
+        const msg = Object.values(res.errors).flat().join("\n");
+        setError(msg || "Login failed");
+        return;
+      }
+
+      const token = res.data?.token;
+      const isAdmin = res.data?.user?.is_admin;
+      if (!token) {
+        setError("Login failed: missing token");
+        return;
+      }
+
+      apiClient.setAuthToken(token);
+
+      // Route based on role
+      // As requested: after login, admins go to home page
+      if (isAdmin) {
+        router.push("/");
+      } else {
+        router.push("/");
+      }
+    })();
   };
 
   return (
@@ -30,12 +61,12 @@ export default function AdminLogin() {
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block text-gray-700 mb-2">Username</label>
+            <label className="block text-gray-700 mb-2">Email</label>
             <input
-              type="text"
-              placeholder="Enter username"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
+              type="email"
+              placeholder="Enter email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
               required
             />

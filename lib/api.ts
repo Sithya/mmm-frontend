@@ -21,9 +21,29 @@ export interface ApiResponse<T = any> {
 
 class ApiClient {
   private baseURL: string;
+  private authToken?: string;
 
   constructor(baseURL: string) {
     this.baseURL = baseURL;
+    if (!isServer) {
+      try {
+        const saved = window.localStorage.getItem('authToken');
+        if (saved) this.authToken = saved;
+      } catch {}
+    }
+  }
+
+  setAuthToken(token?: string) {
+    this.authToken = token;
+    if (!isServer) {
+      try {
+        if (token) {
+          window.localStorage.setItem('authToken', token);
+        } else {
+          window.localStorage.removeItem('authToken');
+        }
+      } catch {}
+    }
   }
 
   private async request<T>(
@@ -40,6 +60,11 @@ class ApiClient {
       },
       ...options,
     };
+
+    // Attach bearer token if available
+    if (this.authToken) {
+      (config.headers as Record<string, string>)['Authorization'] = `Bearer ${this.authToken}`;
+    }
 
     try {
       const response = await fetch(url, config);
