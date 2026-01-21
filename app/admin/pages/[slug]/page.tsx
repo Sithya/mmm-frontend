@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import TextEditor from "@/app/components/AdminComponent/TextEditor";
+// import { useAuth } from "@/context/AuthContext";
+
 
 interface PageSection {
   id: string;
-  type: "text" | "news" | "keynotes" | "important-dates";
+  type: "text" | "news" | "keynotes";
   data: any;
 }
 
@@ -17,6 +19,8 @@ interface Page {
   component: string;
   json: { sections: PageSection[] };
 }
+
+
 
 // Build API base robustly: prefer NEXT_PUBLIC_API_BASE_URL, fall back to localhost.
 let API_URL_BASE =
@@ -42,6 +46,10 @@ if (typeof window !== "undefined") {
 const API_URL = `${API_URL_BASE.replace(/\/$/, "")}/pages`;
 
 export default function AdminPageEditor() {
+
+  // const { user, token } = useAuth();
+  // const isAdmin = user?.is_admin === true;
+
   const router = useRouter();
   const { slug } = useParams<{ slug: string }>();
 
@@ -49,6 +57,15 @@ export default function AdminPageEditor() {
   const [activeTab, setActiveTab] = useState<"edit" | "preview">("edit");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+//   useEffect(() => {
+//   if (user === null) return; // auth still loading (optional)
+  
+//   if (!isAdmin) {
+//     router.replace("/");
+//   }
+// }, [user, isAdmin, router]);
+
 
   useEffect(() => {
     if (!slug) return;
@@ -105,18 +122,6 @@ export default function AdminPageEditor() {
     });
   };
 
-  const addImportantDatesSection = () => {
-    if (!page) return;
-    const newSection: PageSection = {
-      id: `important-dates-${Date.now()}`,
-      type: "important-dates",
-      data: {},
-    };
-    setPage({
-      ...page,
-      json: { sections: [...page.json.sections, newSection] },
-    });
-  };
 
   const handleSubmit = async () => {
     if (!page) return;
@@ -128,7 +133,9 @@ export default function AdminPageEditor() {
 
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", 
+          // Authorization: `Bearer ${token}`, 
+        },
         body: JSON.stringify({
           slug: page.slug,
           title: page.title,
@@ -158,6 +165,10 @@ export default function AdminPageEditor() {
 
   if (loading) return <p className="p-6 text-center">Loading...</p>;
   if (!page) return <p className="p-6 text-center">Page not found</p>;
+  //   if (!isAdmin) {
+  //   return <p className="p-6 text-center">Access denied</p>;
+  // }
+
 
   return (
     <div className="max-h-screen bg-gray-50 p-6 mt-20">
@@ -168,21 +179,19 @@ export default function AdminPageEditor() {
         <div className="flex border-b border-purple-300 mb-4">
           <button
             onClick={() => setActiveTab("edit")}
-            className={`px-4 py-2 font-semibold text-lg ${
-              activeTab === "edit"
+            className={`px-4 py-2 font-semibold text-lg ${activeTab === "edit"
                 ? "border-b-4 border-purple-700 text-purple-900"
                 : "border-b-4 border-transparent text-purple-700"
-            }`}
+              }`}
           >
             Edit
           </button>
           <button
             onClick={() => setActiveTab("preview")}
-            className={`ml-4 px-4 py-2 font-semibold text-lg ${
-              activeTab === "preview"
+            className={`ml-4 px-4 py-2 font-semibold text-lg ${activeTab === "preview"
                 ? "border-b-4 border-purple-700 text-purple-900"
                 : "border-b-4 border-transparent text-purple-700"
-            }`}
+              }`}
           >
             Preview
           </button>
