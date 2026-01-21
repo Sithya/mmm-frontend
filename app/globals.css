@@ -137,6 +137,14 @@
     margin: 16px 0;
   }
 
+  .responsive-iframe {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    max-width: 100%;
+  }
+
+
 
 
 

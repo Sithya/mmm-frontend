@@ -50,10 +50,11 @@ const registerIframeBlot = async () => {
       static create(value: string) {
         const node = super.create() as HTMLImageElement;
         node.src = value;
-        node.style.width = "auto";
+        node.style.width = "100%";
         node.style.height = "auto";
+        node.style.maxWidth = "100%";
         node.style.borderRadius = "6px";
-        node.style.margin = "4px";
+        node.style.margin = "4px 0";
         return node;
       }
 
@@ -89,17 +90,15 @@ const registerIframeBlot = async () => {
         node.setAttribute("src", value);
         node.setAttribute("frameborder", "0");
         node.setAttribute("allowfullscreen", "");
-        node.classList.add("resizable-iframe");
         node.style.width = "100%";
-        node.style.minHeight = "300px";
+        node.style.minHeight = "200px"; // smaller minHeight for mobile
+        node.style.maxHeight = "500px"; // optional maxHeight
         node.style.borderRadius = "10px";
+        node.classList.add("responsive-iframe"); // class for CSS
         return node;
       }
-
-      static value(node: HTMLElement) {
-        return node.getAttribute("src");
-      }
     }
+
 
     class DividerBlot extends BlockEmbed {
       static blotName = "divider";
@@ -116,7 +115,7 @@ const registerIframeBlot = async () => {
   }
 };
 
-const registerFontSizes = async () => {};
+const registerFontSizes = async () => { };
 
 
 // Component //
@@ -157,7 +156,7 @@ function TextEditor({
     ["bold", "italic", "underline", "strike"],
     [{ color: [] }, { background: [] }],
     [{ script: "sub" }, { script: "super" }],
-    [{ header: "1" }, { header: "2" }, { header: "3"}, { header: "4"}, "blockquote", "code-block"],
+    [{ header: "1" }, { header: "2" }, { header: "3" }, { header: "4" }, "blockquote", "code-block"],
     [
       { list: "ordered" },
       { list: "bullet" },
@@ -166,7 +165,7 @@ function TextEditor({
     ],
     [{ direction: "rtl" }, { align: [] }],
     ["link", "video"],
-    ["divider"],    
+    ["divider"],
     ["clean"],
   ];
 
@@ -275,7 +274,7 @@ function TextEditor({
         map: () => openPopup("map"),
         divider: () => {
           const quill = quillRef.current?.getEditor();
-          if(!quill) return;
+          if (!quill) return;
           const range = quill.getSelection(true);
           quill.insertEmbed(range.index, "divider", true);
           quill.setSelection(range.index + 1);
@@ -357,7 +356,7 @@ function TextEditor({
       {/* Popup Modal */}
       {popupOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[2000]">
-          <div className="bg-white p-6 rounded-xl shadow-xl w-[350px] animate-scaleIn">
+          <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-sm sm:max-w-md animate-scaleIn">
             <h2 className="text-lg font-semibold mb-4 capitalize">
               Insert {popupType}
             </h2>
@@ -404,7 +403,7 @@ function TextEditor({
       )}
 
       {/* Editor */}
-      <QuillComponent
+      {/* <QuillComponent
         ref={quillRef}
         value={value}
         onChange={handleChange}
@@ -413,7 +412,21 @@ function TextEditor({
         placeholder="write Something..."
         theme="snow"
         style={{ height: "100%" }}
-      />
+      /> */}
+
+      <div className="relative w-full max-w-6xl px-4 sm:px-6">
+        <QuillComponent
+          ref={quillRef}
+          value={value}
+          onChange={handleChange}
+          modules={modules}
+          formats={formats}
+          placeholder="Write something..."
+          theme="snow"
+          className="h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[75vh] rounded-lg overflow-auto"
+        />
+      </div>
+
     </div>
   );
 }

@@ -7,17 +7,24 @@ import PageRenderer from '../components/AdminComponent/PageRenderer'
 const AttendingPage = () => {
   return (
     <>
-        <Banner />
-         <div className="flex gap-20 justify-center my-10">
-          <div className="max-w-7xl">
+      <Banner />
+
+      <div className="flex justify-center px-4 sm:px-6 mb-16">
+        <div className="flex flex-col lg:flex-row">
+
+          <div className="w-full lg:w-5/6 flex flex-col gap-6">
             <PageRenderer slug="attending" />
             <AttendingButton />
           </div>
-    
-          <div>
-            <ImportantDatesServer />
+
+          <div className="lg:w-1/3 flex justify-center lg:justify-end">
+            <div className="self-start">
+              <ImportantDatesServer />
+            </div>
           </div>
         </div>
+      </div>
+
     </>
   )
 }
