@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css"
 import NavbarWrapper from "./components/UserComponent/NavigationBar/NavbarWrapper";
 import "react-quill-new/dist/quill.snow.css";
+import Footer from "./components/UserComponent/Footer";
 
 export const metadata: Metadata = {
   title: "MMM2027 Application",
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main>
           {children}
         </main>
+        <Footer/>
       </body>
     </html>
   );

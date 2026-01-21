@@ -18,3 +18,17 @@ export interface PaginatedResponse<T> {
   total: number;
 }
 
+export interface OrganizationMember {
+  id: number;
+  name: string;
+  category: string;
+  affiliation: string;
+  photo_url: string;
+}
+
+export type RegistrationType =
+  | "student"
+  | "standard"
+  | "early_bird";
+
+
