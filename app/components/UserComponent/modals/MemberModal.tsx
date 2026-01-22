@@ -44,6 +44,14 @@ export default function MemberModal({
 
   const [categories, setCategories] = useState<string[]>([]);
 
+  type FormErrors = {
+    name?: string;
+    category?: string;
+  };
+
+  const [errors, setErrors] = useState<FormErrors>({});
+  
+
   useEffect(() => {
     apiClient.get<OrganizationMember[]>("/organizations").then((res) => {
       setCategories([...new Set((res.data ?? []).map((m) => m.category))]);
@@ -63,16 +71,33 @@ export default function MemberModal({
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!form.name.trim()) {
-      alert("Name is required.");
-      return;
-    }
+    const newErrors: FormErrors = {};
 
+  // Validate name
+  if (!form.name.trim()) {
+    newErrors.name = "Name is required.";
+  }
+
+  // Validate category (existing OR new)
+  const effectiveCategory = (form.newCategory || form.category).trim();
+  if (!effectiveCategory || effectiveCategory == "__new__") {
+    newErrors.category = "Category is required.";
+  }
+
+  // If any errors, stop here
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    return;
+  }
+
+  // Clear errors if valid
+  setErrors({});
+    
     const payload = {
-      page_id: 6,
+      page_id: 2,
       name: form.name.trim(),
       affiliation: form.affiliation.trim(),
-      category: form.newCategory || form.category,
+      category: effectiveCategory,
       photo_url: form.photo_url.trim(),
     };
 
@@ -87,7 +112,7 @@ export default function MemberModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[9999]">
       <div className="bg-white p-6 w-full max-w-md rounded-xl space-y-5 shadow-lg">
         <h2 className="text-lg font-semibold text-gray-800">
           {member ? "Edit Member" : "Add Member"}
@@ -101,6 +126,9 @@ export default function MemberModal({
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
+          {errors.name && (
+            <p className="text-sm text-red-600 mt-1">{errors.name}</p>
+          )}
         </div>
 
         {/* Affiliation */}
@@ -152,6 +180,9 @@ export default function MemberModal({
             ))}
             <option value="__new__">+ Create new category</option>
           </select>
+          {errors.category && (
+            <p className="text-sm text-red-600 mt-2">{errors.category}</p>
+          )}
         </div>
 
         {form.category === "__new__" && (
