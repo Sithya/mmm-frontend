@@ -6,12 +6,14 @@ import { RegistrationType } from '@/types';
 import HeroBanner from '../components/UserComponent/HeroBanner';
 import RegistrationTypeSelector from '../components/UserComponent/RegistrationTypeSelector';
 import RegistrationForm from '../components/UserComponent/RegistrationForm';
+import { useAuth } from '../components/AuthProvider';
 
 const RegisterPage = () => {
 
   const [registrationType, setRegistrationType] = useState<RegistrationType>("standard");
 
-  const isAdmin = false;
+  const { user } = useAuth();
+  const isAdmin = user?.is_admin === true;
 
   return (
     <>
