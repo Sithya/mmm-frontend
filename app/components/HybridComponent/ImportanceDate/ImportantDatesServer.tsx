@@ -22,8 +22,11 @@ export default async function ImportantDatesServer() {
       due_date: item.due_date,
       title: item.description,
     }))
-    // Sort by due_date ascending to match the sidebar format
-    .sort((a: { due_date: string }, b: { due_date: string }) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+  // Sort by due_date ascending (soonest first)
+  dates.sort(
+    (a, b) => Date.parse(a.due_date) - Date.parse(b.due_date)
+  );
+
 
   return <ImportantDates initialDates={dates} />;
 }

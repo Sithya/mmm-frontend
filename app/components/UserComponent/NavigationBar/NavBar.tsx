@@ -1,30 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../../AuthProvider";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import Image from "next/image";
 import LogoutButton from "./LogoutButton";
-
-interface DropdownSection {
-  title: string;
-  items: { label: string; href: string }[];
-}
 
 interface MenuItem {
   title: string;
   href: string;
-  dropdown?: DropdownSection[];
 }
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [openDropdown, setOpenDropdown] = useState<number | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
-  const { user, signOut, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const menuItems: MenuItem[] = [
     { title: "Home", href: "/home" },
@@ -36,156 +29,97 @@ export default function Navbar() {
     { title: "Register", href: "/register" },
   ];
 
-  const ADMIN_PREFIX = "/f96ca35d-445d-43e3-bf95-a542922b3db4";
-
-  async function handleSignOut() {
-    try {
-      await signOut();
-    } finally {
-      router.push("/home");
-    }
-  }
+  /** Mobile-safe navigation */
+  const handleMobileNavigate = (href: string) => {
+    setMobileMenuOpen(false);
+    router.push(href);
+  };
 
   return (
-    <nav className="w-full shadow-sm fixed top-0 left-0 z-50 bg-white">
+    <nav className="fixed top-0 left-0 z-50 w-full bg-white shadow-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-between p-2">
         {/* LOGO */}
-        <Link href="/home">
-          <Image src="/images/logo.jpg" width={120} height={60} alt="Logo" />
+        <Link href="/home" onClick={() => setMobileMenuOpen(false)} className="-ml-10">
+          <Image
+            src="/images/logo.jpg"
+            width={120}
+            height={60}
+            alt="Logo"
+            priority
+          />
         </Link>
 
-        {/* HAMBURGER ICON - MOBILE */}
-        <div className="lg:hidden">
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="focus:outline-none"
-          >
-            {mobileMenuOpen ? (
-              <span className="text-2xl font-bold">✕</span>
-            ) : (
-              <span className="text-2xl font-bold">☰</span>
-            )}
-          </button>
-        </div>
+        {/* HAMBURGER (MOBILE) */}
+        <button
+          onClick={() => setMobileMenuOpen((prev) => !prev)}
+          className="lg:hidden text-2xl font-bold focus:outline-none"
+          aria-label="Toggle menu"
+        >
+          {mobileMenuOpen ? "✕" : "☰"}
+        </button>
 
         {/* DESKTOP MENU */}
         <div className="hidden lg:flex gap-6 text-lg font-semibold">
-          {menuItems.map((item, index) => {
+          {menuItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
-            return (
-              <div
-                key={index}
-                onMouseEnter={() => item.dropdown && setOpenDropdown(index)}
-                onMouseLeave={() => setOpenDropdown(null)}
-                className="relative"
-              >
-                <Link
-                  href={item.href}
-                  className={`px-6 py-3 rounded-lg transition duration-200
-                    ${isActive
-                      ? "bg-[#2A0845] text-white hover:bg-[#2A0845]"
-                      : "text-black hover:bg-[#faf5ff] hover:text-black-600"
-                    }`}
-                >
-                  {item.title}
-                </Link>
 
-                {item.dropdown && openDropdown === index && (
-                  <div className="absolute top-[72px] left-0 w-screen bg-white border-t shadow-lg z-50 overflow-hidden animate-slideDown">
-                    <div className="max-w-7xl mx-auto p-6 flex gap-14">
-                      {item.dropdown.map((section, i) => (
-                        <div key={i} className="min-w-[220px]">
-                          <Link
-                            href={section.items[0].href}
-                            className="font-bold text-[18px] hover:text-[#2A0845] transition"
-                          >
-                            {section.title}
-                          </Link>
-                          <div className="flex flex-col mt-2 gap-1">
-                            {section.items.map((sub, j) => (
-                              <Link
-                                key={j}
-                                href={sub.href}
-                                className="text-[15px] hover:text-[#2A0845] transition"
-                              >
-                                {sub.label}
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`px-6 py-3 rounded-lg transition-colors duration-150
+                  ${
+                    isActive
+                      ? "bg-[#2A0845] text-white"
+                      : "text-black hover:bg-[#faf5ff]"
+                  }`}
+              >
+                {item.title}
+              </Link>
             );
           })}
 
-          {isAdmin && (
-            <div className="flex items-center">
-              <LogoutButton className="ml-4" />
-            </div>
-          )}
+          {isAdmin && <LogoutButton className="ml-4" />}
         </div>
       </div>
 
       {/* MOBILE MENU */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden bg-white shadow-md border-t">
-          <div className="flex flex-col p-4 gap-2">
-            {menuItems.map((item, index) => {
-              const isActive = pathname.startsWith(item.href);
-              return (
-                <div key={index}>
-                  <Link
-                    href={item.href}
-                    className={`block px-4 py-2 rounded-lg transition duration-200
-                      ${isActive
-                        ? "bg-[#2A0845] text-white"
-                        : "text-black hover:bg-[#faf5ff]"
-                      }`}
-                  >
-                    {item.title}
-                  </Link>
-                  {/* Mobile dropdown if exists */}
-                  {item.dropdown && (
-                    <div className="pl-4 mt-1 flex flex-col gap-1">
-                      {item.dropdown.map((section, i) => (
-                        <div key={i}>
-                          <span className="font-bold text-[16px]">{section.title}</span>
-                          {section.items.map((sub, j) => (
-                            <Link
-                              key={j}
-                              href={sub.href}
-                              className="block px-2 py-1 text-[14px] hover:text-[#2A0845] transition"
-                            >
-                              {sub.label}
-                            </Link>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-            {isAdmin && (
-              <div className="px-4 py-2">
-                <LogoutButton />
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <div
+        className={`
+          lg:hidden bg-white border-t shadow-md
+          transition-all duration-200 ease-out
+          ${mobileMenuOpen
+            ? "max-h-[500px] opacity-100"
+            : "max-h-0 opacity-0 overflow-hidden"}
+        `}
+      >
+        <div className="flex flex-col p-4 gap-2">
+          {menuItems.map((item) => {
+            const isActive = pathname.startsWith(item.href);
 
-      {/* ANIMATION KEYFRAME */}
-      <style jsx global>{`
-        @keyframes slideDown {
-          0% { opacity: 0; transform: translateY(-10px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slideDown { animation: slideDown 0.25s ease-out; }
-      `}</style>
+            return (
+              <button
+                key={item.href}
+                onClick={() => handleMobileNavigate(item.href)}
+                className={`w-full text-left px-4 py-2 rounded-lg transition-colors
+                  ${
+                    isActive
+                      ? "bg-[#2A0845] text-white"
+                      : "text-black hover:bg-[#faf5ff]"
+                  }`}
+              >
+                {item.title}
+              </button>
+            );
+          })}
+
+          {isAdmin && (
+            <div className="pt-2">
+              <LogoutButton />
+            </div>
+          )}
+        </div>
+      </div>
     </nav>
   );
 }

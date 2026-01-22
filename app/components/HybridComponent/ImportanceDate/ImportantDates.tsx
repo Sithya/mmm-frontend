@@ -7,7 +7,6 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css"; 
 import { useAuth } from "../../AuthProvider";
 
-
 interface DateItem {
   id: number;
   due_date: string; 
@@ -21,23 +20,24 @@ interface Props {
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/important-dates`;
 
 export default function ImportantDates({ initialDates }: Props) {
-
   const { user } = useAuth();
   const isAdmin = user?.is_admin === true;
 
-  const [dates, setDates] = useState<DateItem[]>(initialDates);
+  const [dates, setDates] = useState<DateItem[]>(
+    [...initialDates].sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+  );
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [title, setTitle] = useState("");
-
   const [dateError, setDateError] = useState("");
   const [titleError, setTitleError] = useState("");
 
+  // New state for delete confirmation
+  const [confirmDelete, setConfirmDelete] = useState<DateItem | null>(null);
 
   const formatDateDisplay = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -110,17 +110,17 @@ export default function ImportantDates({ initialDates }: Props) {
 
       if (isEditing) {
         setDates(prev =>
-          prev.map(item =>
+          [...prev.map(item =>
             item.id === editingId
               ? { ...item, due_date: due_date!, title }
               : item
-          )
+          )].sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
         );
       } else if (json) {
-        setDates(prev => [
-          ...prev,
-          { id: json.data.id, due_date: due_date!, title },
-        ]);
+        setDates(prev =>
+          [...prev, { id: json.data.id, due_date: due_date!, title }]
+            .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+        );
       }
 
       setShowModal(false);
@@ -129,11 +129,15 @@ export default function ImportantDates({ initialDates }: Props) {
     }
   };
 
-  const deleteDate = async (id: number) => {
+  const handleDelete = async (id: number) => {
     try {
       const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
       if (!res.ok) return;
-      setDates(prev => prev.filter(item => item.id !== id));
+      setDates(prev =>
+        prev.filter(item => item.id !== id)
+          .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+      );
+      setConfirmDelete(null);
     } catch (err) {
       console.error(err);
     }
@@ -148,9 +152,7 @@ export default function ImportantDates({ initialDates }: Props) {
         <p className="text-xs sm:text-sm md:text-base text-gray-700 mt-3 leading-relaxed">
           All deadlines refer to 23:59 of the day in the Anywhere on Inhabited Earth (AOE).{" "}
           More details at{" "}
-          <Link href="/calls" className="underline text-[#2A0845]">
-            Calls
-          </Link>.
+          <Link href="/calls" className="underline text-[#2A0845]">Calls</Link>.
         </p>
 
         <hr className="mt-5 mb-6 border-gray-300" />
@@ -194,7 +196,7 @@ export default function ImportantDates({ initialDates }: Props) {
                         </button>
                         <button
                           className="underline text-red-600 hover:text-red-700"
-                          onClick={() => deleteDate(item.id)}
+                          onClick={() => setConfirmDelete(item)}
                         >
                           <Trash2 className="inline-block mr-1" size={14} />
                         </button>
@@ -218,25 +220,46 @@ export default function ImportantDates({ initialDates }: Props) {
         )}
       </div>
 
-      {/* MODAL */}
+      {/* Delete Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 sm:p-6">
+          <div className="bg-white rounded-xl w-full max-w-sm sm:max-w-md p-4 sm:p-6 shadow-lg animate-slideUp">
+            <h3 className="text-lg sm:text-xl font-bold text-[#2A0845] mb-4">Confirm Deletion</h3>
+            <p className="text-gray-700 mb-6">
+              Are you sure you want to delete <strong>{confirmDelete.title}</strong>? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                className="px-4 py-2 rounded-lg bg-gray-300 w-full sm:w-auto"
+                onClick={() => setConfirmDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-5 py-2 rounded-lg bg-red-600 text-white w-full sm:w-auto"
+                onClick={() => handleDelete(confirmDelete.id)}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ADD / EDIT MODAL */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 sm:p-6">
-          <div className="bg-white rounded-xl w-full max-w-md sm:max-w-lg p-4 sm:p-6 shadow-lg">
+          <div className="bg-white rounded-xl w-full max-w-md sm:max-w-lg p-4 sm:p-6 shadow-lg animate-slideUp">
             <h3 className="text-lg sm:text-xl font-bold text-[#2A0845] mb-4">
               {isEditing ? "Edit Date" : "Add New Date"}
             </h3>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm sm:text-base font-medium text-gray-700 mb-1">
-                  Select Date
-                </label>
+                <label className="block text-sm sm:text-base font-medium text-gray-700 mb-1">Select Date</label>
                 <DatePicker
                   selected={selectedDate}
-                  onChange={(date: Date | null) => {
-                    setSelectedDate(date);
-                    setDateError("");
-                  }}
+                  onChange={(date: Date | null) => { setSelectedDate(date); setDateError(""); }}
                   minDate={new Date()}
                   className="w-full max-w-[400px] border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500 transition"
                   placeholderText="Select a date"
@@ -246,16 +269,11 @@ export default function ImportantDates({ initialDates }: Props) {
               </div>
 
               <div>
-                <label className="block text-sm sm:text-base font-medium text-gray-700 mb-1">
-                  Title
-                </label>
+                <label className="block text-sm sm:text-base font-medium text-gray-700 mb-1">Title</label>
                 <input
                   placeholder="Title"
                   value={title}
-                  onChange={e => {
-                    setTitle(e.target.value);
-                    setTitleError("");
-                  }}
+                  onChange={e => { setTitle(e.target.value); setTitleError(""); }}
                   className="w-full border rounded-lg p-2 shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500 transition"
                 />
                 {titleError && <p className="text-xs sm:text-sm text-red-600 mt-1">{titleError}</p>}
@@ -279,6 +297,18 @@ export default function ImportantDates({ initialDates }: Props) {
           </div>
         </div>
       )}
+
+      <style>
+        {`
+          .animate-slideUp {
+            animation: slideUp 0.25s ease-out;
+          }
+          @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}
+      </style>
     </>
   );
 }

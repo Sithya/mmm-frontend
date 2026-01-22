@@ -5,8 +5,6 @@ import Link from "next/link";
 import { Pencil, Trash2 } from "lucide-react";
 import { useAuth } from "../AuthProvider";
 
-
-
 interface NewsItem {
   id: number;
   page_id?: number;
@@ -24,14 +22,12 @@ interface Props {
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/news`;
 
 export default function NewsCard({ pageId }: Props) {
-  
   const { user } = useAuth();
   const isAdmin = user?.is_admin === true;
 
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [editNews, setEditNews] = useState<NewsItem | null>(null);
-
   const [newNews, setNewNews] = useState<Partial<NewsItem>>({
     title: "",
     content: "",
@@ -39,11 +35,11 @@ export default function NewsCard({ pageId }: Props) {
     link_url: "",
   });
 
+  const [confirmDelete, setConfirmDelete] = useState<NewsItem | null>(null);
 
   useEffect(() => {
     const fetchNews = async () => {
       if (!pageId) return;
-
       try {
         const res = await fetch(`${API_URL}`);
         if (!res.ok) throw new Error("Failed to fetch news");
@@ -54,13 +50,11 @@ export default function NewsCard({ pageId }: Props) {
         console.error(err);
       }
     };
-
     fetchNews();
   }, [pageId]);
 
   const handleSave = async () => {
     if (!newNews.title) return;
-
     try {
       let res: Response;
       if (editNews) {
@@ -89,9 +83,7 @@ export default function NewsCard({ pageId }: Props) {
 
       if (editNews && itemData) {
         setNewsData((prev) =>
-          prev.map((item) =>
-            item.id === editNews.id ? { ...item, ...itemData } : item
-          )
+          prev.map((item) => (item.id === editNews.id ? { ...item, ...itemData } : item))
         );
       } else if (itemData) {
         setNewsData((prev) => [...prev, itemData]);
@@ -116,6 +108,7 @@ export default function NewsCard({ pageId }: Props) {
       const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
       if (!res.ok) return;
       setNewsData((prev) => prev.filter((item) => item.id !== id));
+      setConfirmDelete(null);
     } catch (err) {
       console.error(err);
     }
@@ -160,9 +153,7 @@ export default function NewsCard({ pageId }: Props) {
                     </p>
                   )}
 
-                  <h2 className="font-semibold text-lg text-gray-900 mb-1">
-                    {item.title}
-                  </h2>
+                  <h2 className="font-semibold text-lg text-gray-900 mb-1">{item.title}</h2>
 
                   {item.content && /<[a-z][\s\S]*>/i.test(item.content) ? (
                     <div
@@ -186,17 +177,17 @@ export default function NewsCard({ pageId }: Props) {
                 </div>
 
                 {isAdmin && (
-                  <div className="flex mt-3 md:mt-0 md:ml-4 gap-2 md:flex-col">
+                  <div className="flex mt-3 md:mt-0 md:ml-4 gap-2 md:flex">
                     <button
                       onClick={() => openEditModal(item)}
-                      className="p-2 rounded-full text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition"
+                      className="p-2 rounded-full text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition -mr-3"
                       aria-label="Edit news"
                     >
                       <Pencil size={20} />
                     </button>
 
                     <button
-                      onClick={() => handleDelete(item.id)}
+                      onClick={() => setConfirmDelete(item)}
                       className="p-2 rounded-full text-red-600 hover:bg-red-100 hover:text-red-700 transition"
                       aria-label="Delete news"
                     >
@@ -214,24 +205,39 @@ export default function NewsCard({ pageId }: Props) {
         <div className="flex justify-center mt-6 px-4">
           <button
             onClick={() => setShowCreate(true)}
-            className="
-              px-6 py-2 mt-4
-              w-full sm:w-auto
-              font-medium rounded-lg
-              border-2 border-purple-300
-              bg-white text-purple-950
-              transition-all duration-300 ease-out
-              hover:bg-purple-700 hover:text-white
-              hover:-translate-y-1
-              active:translate-y-0
-              disabled:opacity-70
-              disabled:cursor-not-allowed
-            "
+            className="px-6 py-2 mt-4 w-full sm:w-auto font-medium rounded-lg border-2 border-purple-300 bg-white text-purple-950 transition-all duration-300 ease-out hover:bg-purple-700 hover:text-white hover:-translate-y-1 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed"
           >
             + Create News
           </button>
         </div>
+      )}
 
+      {/* Delete Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-xl animate-slideUp">
+            <h2 className="text-xl font-semibold text-[#2A0845] mb-4">
+              Confirm Deletion
+            </h2>
+            <p className="text-gray-700 mb-6">
+              Are you sure you want to delete <strong>{confirmDelete.title}</strong>? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(confirmDelete.id)}
+                className="px-5 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 transition font-medium"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Create / Edit Modal */}
@@ -248,36 +254,28 @@ export default function NewsCard({ pageId }: Props) {
                 placeholder="Title"
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
                 value={newNews.title}
-                onChange={(e) =>
-                  setNewNews({ ...newNews, title: e.target.value })
-                }
+                onChange={(e) => setNewNews({ ...newNews, title: e.target.value })}
               />
               <textarea
                 rows={3}
                 placeholder="Detail"
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
                 value={newNews.content}
-                onChange={(e) =>
-                  setNewNews({ ...newNews, content: e.target.value })
-                }
-              ></textarea>
+                onChange={(e) => setNewNews({ ...newNews, content: e.target.value })}
+              />
               <input
                 type="text"
                 placeholder="Link text (optional)"
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
                 value={newNews.link_text || ""}
-                onChange={(e) =>
-                  setNewNews({ ...newNews, link_text: e.target.value })
-                }
+                onChange={(e) => setNewNews({ ...newNews, link_text: e.target.value })}
               />
               <input
                 type="text"
                 placeholder="Link URL (optional)"
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
                 value={newNews.link_url || ""}
-                onChange={(e) =>
-                  setNewNews({ ...newNews, link_url: e.target.value })
-                }
+                onChange={(e) => setNewNews({ ...newNews, link_url: e.target.value })}
               />
             </div>
 
