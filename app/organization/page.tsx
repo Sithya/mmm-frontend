@@ -3,12 +3,12 @@ import { OrganizationMember } from "@/types";
 import OrganizationView from "../components/UserComponent/OrganizationView";
 import ImportantDatesServer from "../components/HybridComponent/ImportanceDate/ImportantDatesServer";
 import Banner from "../components/UserComponent/Banner";
+import { useAuth } from "../components/AuthProvider";
 
 
 export default async function OrganizationPage() {
-
-  // Temporary role control
-  const isAdmin = true;
+  const { user } = useAuth();
+  const isAdmin = user?.is_admin === true;
 
   const members = await apiClient.get<OrganizationMember[]>("/organizations");
 

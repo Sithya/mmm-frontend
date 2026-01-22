@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import "./globals.css"
 import NavbarWrapper from "./components/UserComponent/NavigationBar/NavbarWrapper";
+import { AuthProvider } from "./components/AuthProvider";
 import "react-quill-new/dist/quill.snow.css";
 import Footer from "./components/UserComponent/Footer";
 
@@ -14,10 +15,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <NavbarWrapper />
-        <main>
-          {children}
-        </main>
+        <AuthProvider>
+          <NavbarWrapper />
+          <main>
+            {children}
+          </main>
+        </AuthProvider>
         <Footer/>
       </body>
     </html>

@@ -59,18 +59,21 @@ export default async function PageRenderer({ slug }: { slug: string }) {
     }
   });
 
+  // Decision about admin rendering happens client-side (token stored in localStorage)
+
   return (
     <>
       {resultSections.map((section: any) => {
         switch (section.type) {
           case 'text':
             return (
-              <div key={section.id} className="ql-snow max-w-5xl my-6 text-gray-900">
+              <div key={section.id} className="ql-snow w-full max-w-full sm:max-w-xl md:max-w-3xl lg:max-w-6xl my-6 text-gray-900 px-4 sm:px-6">
                 <div
-                  className="ql-editor"
+                  className="ql-editor prose sm:prose-sm md:prose md:prose-lg lg:prose-xl"
                   dangerouslySetInnerHTML={{ __html: section.data.html }}
                 />
               </div>
+
             );
 
           case 'news':
@@ -86,7 +89,7 @@ export default async function PageRenderer({ slug }: { slug: string }) {
               <Keynotes
                 key={section.id}
                 pageId={section.data.page_id}
-                isAdmin={true}
+                      // isAdmin={isAdmin}    // dynamically set
               />
             );
 

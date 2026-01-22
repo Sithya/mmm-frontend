@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api";
 import { OrganizationMember } from "@/types";
-import Banner from "./Banner";
 import CategorySection from "./CategorySection";
 import MemberModal from "./modals/MemberModal";
 
