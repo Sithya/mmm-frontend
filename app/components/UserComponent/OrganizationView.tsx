@@ -5,14 +5,16 @@ import { apiClient } from "@/lib/api";
 import { OrganizationMember } from "@/types";
 import CategorySection from "./CategorySection";
 import MemberModal from "./modals/MemberModal";
+import { useAuth } from "../AuthProvider";
 
 export default function OrganizationView({
-  isAdmin,
   initialMembers,
 }: {
-  isAdmin: boolean,
   initialMembers: OrganizationMember[];
 }) {
+    const { user } = useAuth();
+    const isAdmin = user?.is_admin === true;
+
     const [members, setMembers] = useState(initialMembers);
     const [loading, setLoading] = useState(true);
     const [openModal, setOpenModal] = useState(false);
