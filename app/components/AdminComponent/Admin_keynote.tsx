@@ -44,6 +44,7 @@ export default function AdminKeynote({
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<Keynote | null>(null);
 
   const [currentPageId, setCurrentPageId] = useState<number | null>(pageId);
 
@@ -109,7 +110,8 @@ export default function AdminKeynote({
         bio: keynote.bio ?? '',
         content: keynote.content ?? '',
         date: keynote.date ?? '',
-        time: keynote.time ?? '',
+        // normalize saved time to HH:MM (strip seconds if present)
+        time: keynote.time ? String(keynote.time).slice(0, 5) : '',
       });
     } else {
       setEditingId(null);
@@ -141,6 +143,7 @@ export default function AdminKeynote({
 
     // normalize payload: convert empty strings to nulls and map frontend fields
     const normalizePayload = (f: typeof form, pageId: number) => {
+      const timeVal = f.time ? String(f.time).slice(0, 5) : null;
       const p: any = {
         page_id: pageId,
         name: f.name?.trim() || null,
@@ -149,9 +152,11 @@ export default function AdminKeynote({
         affiliation: f.affiliation?.trim() || null,
         // backend expects HTML fields for rich text; map plain values to *_html
         bio_html: f.bio?.trim() || null,
-        content_html: f.content?.trim() || null,
+        // backend uses `body_html` for keynote content
+        body_html: f.content?.trim() || null,
         date: f.date || null,
-        time: f.time || null,
+        // ensure time is HH:MM or null
+        time: timeVal,
       };
 
       // remove undefined keys (keep explicit nulls)
@@ -182,11 +187,18 @@ export default function AdminKeynote({
 
   const handleDelete = async (id: number) => {
     try {
-      await apiClient.delete(`/keynotes/${id}`);
-      // refresh list from server to keep in sync
-      fetchData();
+      const res = await apiClient.delete(`/keynotes/${id}`);
+      if (res?.errors) {
+        console.error('Delete failed', res.errors);
+        alert('Failed to delete keynote. See console for details.');
+        return;
+      }
+      // close confirm modal and refresh list
+      setConfirmDelete(null);
+      await fetchData();
     } catch (err) {
       console.error('Delete failed', err);
+      alert('Unexpected error deleting keynote. See console for details.');
     }
   };
 
@@ -234,7 +246,7 @@ export default function AdminKeynote({
                     <Pencil size={20} />
                   </button>
                   <button
-                    onClick={() => handleDelete(keynote.id)}
+                    onClick={() => setConfirmDelete(keynote)}
                     className="p-2 rounded-full text-red-600 hover:bg-red-100 hover:text-red-700 transition"
                     aria-label="Delete keynote"
                   >
@@ -417,6 +429,34 @@ export default function AdminKeynote({
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-xl animate-slideUp">
+            <h2 className="text-xl font-semibold text-[#2A0845] mb-4">Confirm Deletion</h2>
+            <p className="text-gray-700 mb-6">
+              Are you sure you want to delete <strong>{confirmDelete.name}</strong>? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleDelete(confirmDelete.id);
+                }}
+                className="px-5 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 transition font-medium"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

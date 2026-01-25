@@ -59,27 +59,29 @@ export default function Navbar() {
         </button>
 
         {/* DESKTOP MENU */}
-        <div className="hidden lg:flex gap-6 text-lg font-semibold">
-          {menuItems.map((item) => {
-            const isActive = pathname.startsWith(item.href);
+        <div className="hidden lg:flex items-center gap-6 text-lg font-semibold">
+          <div className="flex gap-6">
+            {menuItems.map((item) => {
+              const isActive = pathname.startsWith(item.href);
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`px-6 py-3 rounded-lg transition-colors duration-150
-                  ${
-                    isActive
-                      ? "bg-[#2A0845] text-white"
-                      : "text-black hover:bg-[#faf5ff]"
-                  }`}
-              >
-                {item.title}
-              </Link>
-            );
-          })}
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`px-6 py-3 rounded-lg transition-colors duration-150
+                    ${
+                      isActive
+                        ? "bg-[#2A0845] text-white"
+                        : "text-black hover:bg-[#faf5ff]"
+                    }`}
+                >
+                  {item.title}
+                </Link>
+              );
+            })}
+          </div>
 
-          {isAdmin && <LogoutButton className="ml-4" />}
+          {isAdmin && <LogoutButton className="px-6 py-2 my-4 font-medium rounded-lg border-2 border-purple-300 bg-white text-purple-950 transition-all duration-300 ease-out hover:bg-purple-700 hover:text-white hover:-translate-y-3 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed" />}
         </div>
       </div>
 

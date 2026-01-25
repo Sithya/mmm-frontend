@@ -172,12 +172,19 @@ export default function Keynotes({ pageId, pageSlug, keynotes, refreshToken }: {
   if (items.length === 0) {
     return <div className="text-center text-gray-500 py-12">No keynotes available at this time.</div>;
   }
-  return (
+
+return (
+  <section className="max-w-5xl mx-auto pr-20">
+    <h2 className="text-2xl font-normal text-[#2A0845] mb-6">Key Note</h2>
+
     <div className="space-y-6">
       {items.map((keynote) => (
         <KeynoteCard key={keynote.id} keynote={keynote} />
       ))}
     </div>
-  );
+  </section>
+);
+
+
 }
 
