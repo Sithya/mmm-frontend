@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api";
+import { Pencil, Trash2 } from 'lucide-react';
 
 type FaqItem = {
     id?: number;
@@ -9,7 +10,7 @@ type FaqItem = {
     answer: string;
     order?: number;
 };
-  
+
 
 type Page = { id: number; slug: string; title: string; content: string | null };
 
@@ -21,6 +22,7 @@ export default function AdminFaq({ className }: { className?: string }) {
 
     const [showModal, setShowModal] = useState<boolean>(false);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [confirmDelete, setConfirmDelete] = useState<{ index: number; id?: number; question?: string } | null>(null);
     const [form, setForm] = useState<FaqItem>({ question: "", answer: "", order: 0 });
     const [error, setError] = useState<string | null>(null);
 
@@ -106,57 +108,70 @@ export default function AdminFaq({ className }: { className?: string }) {
         setShowModal(false);
     };
 
-    const handleDelete = async (index: number) => {
+    // Open confirmation modal for delete
+    const handleDelete = (index: number) => {
         const id = items[index]?.id;
-        if (!id) return;
-        
-        if (!confirm("Delete this FAQ?")) return;
-        
+        const question = items[index]?.question;
+        setConfirmDelete({ index, id, question });
+    };
+
+    // Perform deletion after confirmation
+    const performDelete = async () => {
+        if (!confirmDelete) return;
+        const { id } = confirmDelete;
+        if (!id) {
+            setConfirmDelete(null);
+            return;
+        }
+
         setSaving(true);
+        setError(null);
         try {
             await apiClient.delete(`/faqs/${id}`);
             await loadFaqs();
-        } catch {
+            setConfirmDelete(null);
+        } catch (e) {
+            console.error(e);
             setError("Failed to delete FAQ.");
         } finally {
             setSaving(false);
         }
     };
-      
+
 
     const submitFaq = async () => {
         if (!form.question.trim() || !form.answer.trim()) return;
-      
+
         setSaving(true);
         setError(null);
-      
+
         try {
-          if (editingIndex != null && items[editingIndex]?.id) {
-            // UPDATE
-            const id = items[editingIndex].id!;
-            await apiClient.put(`/faqs/${id}`, {
-              question: form.question,
-              answer: form.answer,
-              order: form.order ?? 0,
-            });
-          } else {
-            // CREATE
-            await apiClient.post("/faqs", {
-              question: form.question,
-              answer: form.answer,
-              order: form.order ?? 0,
-            });
-          }
-      
-          await loadFaqs(); 
-          setShowModal(false);
+            if (editingIndex != null && items[editingIndex]?.id) {
+                // UPDATE
+                const id = items[editingIndex].id!;
+                await apiClient.put(`/faqs/${id}`, {
+                    question: form.question,
+                    answer: form.answer,
+                    order: form.order ?? 0,
+                });
+            } else {
+                // CREATE
+                await apiClient.post("/faqs", {
+                    question: form.question,
+                    answer: form.answer,
+                    order: form.order ?? 0,
+                });
+            }
+
+            await loadFaqs();
+            setShowModal(false);
         } catch (e) {
-          setError("Failed to save FAQ. Please try again.");
+            setError("Failed to save FAQ. Please try again.");
         } finally {
-          setSaving(false);
+            setSaving(false);
         }
-      };
-      
+    };
+
 
     return (
         <div className={className}>
@@ -183,8 +198,20 @@ export default function AdminFaq({ className }: { className?: string }) {
                                         <p className="text-xs text-black mt-1">Order: {item.order ?? 0}</p>
                                     </div>
                                     <div className="flex gap-2">
-                                        <button onClick={() => openModal(idx)} className="px-4 py-1 bg-blue-600 text-white rounded text-sm">Edit</button>
-                                        <button onClick={() => handleDelete(idx)} className="px-4 py-1 bg-red-600 text-white rounded text-sm">Delete</button>
+                                        <button
+                                            onClick={() => openModal(idx)}
+                                            aria-label="Edit FAQ"
+                                            className="p-1 rounded-full text-purple-700 hover:bg-purple-100 hover:text-purple-900 transition"
+                                        >
+                                            <Pencil size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(idx)}
+                                            aria-label="Delete FAQ"
+                                            className="p-1 rounded-full text-red-600 hover:bg-red-100 hover:text-red-700 transition"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -195,7 +222,7 @@ export default function AdminFaq({ className }: { className?: string }) {
                 <div className="mt-6 flex justify-center">
                     <button
                         onClick={() => openModal()}
-                        className="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-lg"
+                        className="px-6 py-2 my-4 font-medium rounded-lg border-2 border-purple-300 bg-white text-purple-950 transition-all duration-300 ease-out hover:bg-purple-700 hover:text-white hover:-translate-y-3 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                         + Add FAQ
                     </button>
@@ -247,6 +274,30 @@ export default function AdminFaq({ className }: { className?: string }) {
                                     <button type="submit" className="px-6 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-lg">{editingIndex != null ? 'Update' : 'Create'}</button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {confirmDelete && (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+                    <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-xl">
+                        <h2 className="text-xl font-semibold text-black mb-4">Confirm Deletion</h2>
+                        <p className="text-gray-700 mb-6">Are you sure you want to delete <strong>{confirmDelete.question ?? 'this FAQ'}</strong>? This action cannot be undone.</p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setConfirmDelete(null)}
+                                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => performDelete()}
+                                className="px-5 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 transition font-medium"
+                            >
+                                Delete
+                            </button>
                         </div>
                     </div>
                 </div>
