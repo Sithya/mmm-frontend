@@ -3,18 +3,15 @@
 import React, { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api";
 
-type FAQItem = {
+type FaqItem = {
+  id?: number;
   question: string;
   answer: string;
   order?: number;
 };
 
-type Page = { id: number; slug: string; content: string | null };
-
-
-
 export default function RegistrationFAQ() {
-  const [items, setItems] = useState<FAQItem[]>([]);
+  const [items, setItems] = useState<FaqItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -22,19 +19,21 @@ export default function RegistrationFAQ() {
     const load = async () => {
       setLoading(true);
       try {
-        const res = await apiClient.get<Page>("/pages/slug/registration-faq");
-        const page = res.data;
-        let next: FAQItem[] = [];
-        if (page?.content) {
-          try {
-            const maybe = JSON.parse(page.content);
-            if (Array.isArray(maybe)) {
-              next = maybe.filter(x => typeof x?.question === "string" && typeof x?.answer === "string");
-            }
-          } catch {}
-        }
-        next.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-        if (mounted) setItems(next);
+        const res = await apiClient.get<FaqItem[]>("/faqs");
+        setItems((res.data ?? []).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+        console.log(res)
+        // const page = res.data;
+        // let next: FAQItem[] = [];
+        // if (page?.content) {
+        //   try {
+        //     const maybe = JSON.parse(page.content);
+        //     if (Array.isArray(maybe)) {
+        //       next = maybe.filter(x => typeof x?.question === "string" && typeof x?.answer === "string");
+        //     }
+        //   } catch {}
+        // }
+        // next.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        // if (mounted) setItems(next);
       } catch {
         if (mounted) setItems([]);
       } finally {

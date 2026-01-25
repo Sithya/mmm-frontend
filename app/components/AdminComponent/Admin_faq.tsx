@@ -4,10 +4,12 @@ import React, { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api";
 
 type FaqItem = {
+    id?: number;
     question: string;
     answer: string;
     order?: number;
 };
+  
 
 type Page = { id: number; slug: string; title: string; content: string | null };
 
@@ -26,23 +28,25 @@ export default function AdminFaq({ className }: { className?: string }) {
         setLoading(true);
         setError(null);
         try {
-            const res = await apiClient.get<Page>("/pages/slug/registration-faq");
-            const page = res.data;
-            if (page?.id) setPageId(page.id);
-            let parsed: FaqItem[] | null = null;
-            if (page?.content) {
-                try {
-                    const maybe = JSON.parse(page.content);
-                    if (Array.isArray(maybe)) {
-                        parsed = maybe.filter(x => typeof x?.question === "string" && typeof x?.answer === "string");
-                    }
-                } catch {
-                    // ignore parse errors; will fall back
-                }
-            }
-            const next = parsed ?? [];
-            next.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-            setItems(next);
+            const res = await apiClient.get<FaqItem[]>("/faqs");
+            setItems((res.data ?? []).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+
+            // const page = res.data;
+            // if (page?.id) setPageId(page.id);
+            // let parsed: FaqItem[] | null = null;
+            // if (page?.content) {
+            //     try {
+            //         const maybe = JSON.parse(page.content);
+            //         if (Array.isArray(maybe)) {
+            //             parsed = maybe.filter(x => typeof x?.question === "string" && typeof x?.answer === "string");
+            //         }
+            //     } catch {
+            //         // ignore parse errors; will fall back
+            //     }
+            // }
+            // const next = parsed ?? [];
+            // next.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+            // setItems(next);
         } catch (e: any) {
             // If slug doesn't exist, keep empty and allow initialize
             setItems([]);
@@ -103,9 +107,56 @@ export default function AdminFaq({ className }: { className?: string }) {
     };
 
     const handleDelete = async (index: number) => {
-        const next = items.filter((_, i) => i !== index);
-        await persist(next);
+        const id = items[index]?.id;
+        if (!id) return;
+        
+        if (!confirm("Delete this FAQ?")) return;
+        
+        setSaving(true);
+        try {
+            await apiClient.delete(`/faqs/${id}`);
+            await loadFaqs();
+        } catch {
+            setError("Failed to delete FAQ.");
+        } finally {
+            setSaving(false);
+        }
     };
+      
+
+    const submitFaq = async () => {
+        if (!form.question.trim() || !form.answer.trim()) return;
+      
+        setSaving(true);
+        setError(null);
+      
+        try {
+          if (editingIndex != null && items[editingIndex]?.id) {
+            // UPDATE
+            const id = items[editingIndex].id!;
+            await apiClient.put(`/faqs/${id}`, {
+              question: form.question,
+              answer: form.answer,
+              order: form.order ?? 0,
+            });
+          } else {
+            // CREATE
+            await apiClient.post("/faqs", {
+              question: form.question,
+              answer: form.answer,
+              order: form.order ?? 0,
+            });
+          }
+      
+          await loadFaqs(); 
+          setShowModal(false);
+        } catch (e) {
+          setError("Failed to save FAQ. Please try again.");
+        } finally {
+          setSaving(false);
+        }
+      };
+      
 
     return (
         <div className={className}>
@@ -159,7 +210,7 @@ export default function AdminFaq({ className }: { className?: string }) {
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl">
                         <div className="p-6">
                             <h2 className="text-2xl font-bold text-black mb-4">{editingIndex != null ? 'Edit FAQ' : 'Create FAQ'}</h2>
-                            <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-4">
+                            <form onSubmit={(e) => { e.preventDefault(); submitFaq(); }} className="space-y-4">
                                 <label className="block text-sm font-medium text-black mb-1 text-left">Question</label>
                                 <input
                                     required

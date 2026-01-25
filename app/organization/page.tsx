@@ -1,17 +1,30 @@
-import React from 'react'
+import { apiClient } from "@/lib/api";
+import { OrganizationMember } from "@/types";
+import OrganizationView from "../components/UserComponent/OrganizationView";
+import ImportantDatesServer from "../components/HybridComponent/ImportanceDate/ImportantDatesServer";
+import Banner from "../components/UserComponent/Banner";
 
-const OrganizationPage = () => {
+export default async function OrganizationPage() {
+  const members = await apiClient.get<OrganizationMember[]>("/organizations");
+
   return (
     <>
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-gray-900">
-          Organization Page
-        </h1>
-      </div>
-    </div>
-    </>
-  )
-}
+      <Banner/>
+      <div className="flex gap-20 justify-center my-10">
+        <div className="max-w-7xl">
+          <OrganizationView 
+          initialMembers={members.data ?? []}/>
+        </div>
+        
 
-export default OrganizationPage
+        <div>
+            <ImportantDatesServer />
+        </div>
+        
+      </div>
+    </>
+      
+    
+    
+  );
+}
