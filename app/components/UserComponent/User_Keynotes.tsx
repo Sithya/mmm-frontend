@@ -175,7 +175,7 @@ export default function Keynotes({ pageId, pageSlug, keynotes, refreshToken }: {
 
 return (
   <section className="max-w-5xl mx-auto pr-20">
-    <h2 className="text-2xl font-normal text-[#2A0845] mb-6">Key Note</h2>
+    <h2 className="text-2xl font-normal text-[#2A0845] mb-6">Keynote</h2>
 
     <div className="space-y-6">
       {items.map((keynote) => (
