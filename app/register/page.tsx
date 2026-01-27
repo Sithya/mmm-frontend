@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react'
 import AdminFaq from '../components/AdminComponent/Admin_faq'
-import RegistrationFAQ from '../components/RegistrationFAQ'
+import RegistrationFAQ from '../components/HybridComponent/RegistrationFAQ'
 import { RegistrationType } from '@/types';
 import HeroBanner from '../components/UserComponent/HeroBanner';
 import RegistrationTypeSelector from '../components/UserComponent/RegistrationTypeSelector';

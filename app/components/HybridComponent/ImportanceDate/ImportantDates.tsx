@@ -6,6 +6,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css"; 
 import { useAuth } from "../../AuthProvider";
+import { apiClient } from "@/lib/api";
 
 interface DateItem {
   id: number;
@@ -17,7 +18,7 @@ interface Props {
   initialDates: DateItem[];
 }
 
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/important-dates`;
+const API_URL = `/important-dates`;
 
 export default function ImportantDates({ initialDates }: Props) {
   const { user } = useAuth();
@@ -92,21 +93,14 @@ export default function ImportantDates({ initialDates }: Props) {
     if (!validateForm()) return;
 
     const due_date = selectedDate?.toISOString().split("T")[0];
+    const payload = { due_date, title };
 
     try {
-      const res = await fetch(
-        isEditing ? `${API_URL}/${editingId}` : API_URL,
-        {
-          method: isEditing ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ due_date, description: title }),
-        }
-      );
+      const json = isEditing
+        ? await apiClient.put(`/important-dates/${editingId}`, payload)
+        : await apiClient.post('/important-dates', payload);
 
-      if (!res.ok) return;
-
-      const text = await res.text();
-      const json = text ? JSON.parse(text) : null;
+      if (!json) return;
 
       if (isEditing) {
         setDates(prev =>
@@ -116,9 +110,9 @@ export default function ImportantDates({ initialDates }: Props) {
               : item
           )].sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
         );
-      } else if (json) {
+      } else if (json && json.data && typeof json.data === 'object' && 'id' in json.data) {
         setDates(prev =>
-          [...prev, { id: json.data.id, due_date: due_date!, title }]
+          [...prev, { id: (json.data as { id: number }).id, due_date: due_date!, title }]
             .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
         );
       }
@@ -131,8 +125,12 @@ export default function ImportantDates({ initialDates }: Props) {
 
   const handleDelete = async (id: number) => {
     try {
-      const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-      if (!res.ok) return;
+      const res = await apiClient.delete(`/important-dates/${id}`);
+      if (res?.errors) {
+        console.error('Delete failed', res.errors);
+        alert('Failed to delete keynote. See console for details.');
+        return;
+      }
       setDates(prev =>
         prev.filter(item => item.id !== id)
           .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())

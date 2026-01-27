@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Pencil, Trash2 } from "lucide-react";
 import { useAuth } from "../AuthProvider";
+import { apiClient } from "@/lib/api";
 
 interface NewsItem {
   id: number;
@@ -53,66 +54,59 @@ export default function NewsCard({ pageId }: Props) {
     fetchNews();
   }, [pageId]);
 
-  const handleSave = async () => {
-    if (!newNews.title) return;
-    try {
-      let res: Response;
-      if (editNews) {
-        res = await fetch(`${API_URL}/${editNews.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newNews),
-        });
-      } else {
-        res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...newNews,
-            page_id: pageId || 2,
-            published_at: new Date().toISOString(),
-          }),
-        });
-      }
+ const handleSave = async () => {
+  if (!newNews.title) return;
 
-      if (!res.ok) return;
+  try {
+    const payload = {
+      ...newNews,
+      page_id: pageId, // ✅ ensure page_id is sent
+    };
 
-      const text = await res.text();
-      const json = text ? JSON.parse(text) : null;
-      const itemData = json?.data || json;
+    let itemData: NewsItem;
 
-      if (editNews && itemData) {
-        setNewsData((prev) =>
-          prev.map((item) => (item.id === editNews.id ? { ...item, ...itemData } : item))
-        );
-      } else if (itemData) {
-        setNewsData((prev) => [...prev, itemData]);
-      }
+    if (editNews) {
+      const res = await apiClient.put(`/news/${editNews.id}`, payload);
+      itemData = res.data as NewsItem;
 
-      setShowCreate(false);
-      setEditNews(null);
-      setNewNews({
-        title: "",
-        content: "",
-        published_at: "",
-        link_text: "",
-        link_url: "",
-      });
-    } catch (err) {
-      console.error(err);
+      setNewsData((prev) =>
+        prev.map((item) =>
+          item.id === editNews.id ? itemData : item
+        )
+      );
+    } else {
+      const res = await apiClient.post(`/news`, payload);
+      itemData = res.data as NewsItem;
+
+      setNewsData((prev) => [...prev, itemData]);
     }
-  };
 
-  const handleDelete = async (id: number) => {
-    try {
-      const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-      if (!res.ok) return;
-      setNewsData((prev) => prev.filter((item) => item.id !== id));
-      setConfirmDelete(null);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    // reset state
+    setShowCreate(false);
+    setEditNews(null);
+    setNewNews({
+      title: "",
+      content: "",
+      published_at: "",
+      link_text: "",
+      link_url: "",
+    });
+  } catch (err) {
+    console.error("Save failed:", err);
+  }
+};
+
+const handleDelete = async (id: number) => {
+  try {
+    await apiClient.delete(`/news/${id}`); 
+
+    setNewsData((prev) => prev.filter((item) => item.id !== id));
+    setConfirmDelete(null);
+  } catch (err) {
+    console.error("Delete failed:", err);
+  }
+};
+
 
   const openEditModal = (item: NewsItem) => {
     setEditNews(item);
