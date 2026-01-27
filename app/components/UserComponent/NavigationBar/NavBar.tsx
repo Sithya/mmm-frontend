@@ -39,7 +39,7 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 z-50 w-full bg-white shadow-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-between p-2">
         {/* LOGO */}
-        <Link href="/home" onClick={() => setMobileMenuOpen(false)} className="-ml-10">
+        <Link href="/home" onClick={() => setMobileMenuOpen(false)} className="">
           <Image
             src="/images/logo.jpg"
             width={120}
